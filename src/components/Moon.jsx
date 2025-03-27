@@ -6,15 +6,7 @@ import { useTexture } from '@react-three/drei';
 const Moon = ({ moon, parentSize, speedFactor }) => {
   const ref = useRef();
   const moonRef = useRef();
-  
-  // Load texture at the top level
-  let texture;
-  try {
-    texture = useTexture(moon.textureMap);
-  } catch (error) {
-    console.warn(`Failed to load texture for moon: ${moon.name}`, error);
-    texture = null;
-  }
+  const texture = useTexture(moon.textureMap);
   
   // Create material with texture
   const material = useMemo(() => {

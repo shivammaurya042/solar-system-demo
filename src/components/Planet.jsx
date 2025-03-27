@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useEffect } from 'react';
+import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
 import SunGlow from './SunGlow';
@@ -11,18 +11,10 @@ const Planet = ({ planet, speedFactor }) => {
   const ref = useRef();
   const planetRef = useRef();
   const { name, color, size, orbitRadius, orbitSpeed, tilt, rotationSpeed } = planet;
-  
-  // Load texture at the top level
-  let texture;
-  try {
-    texture = useTexture(planet.textureMap);
-  } catch (error) {
-    console.warn(`Failed to load texture for planet: ${name}`, error);
-    texture = null;
-  }
+  const texture = useTexture(planet.textureMap);
   
   // Apply initial tilt if specified
-  useEffect(() => {
+  useMemo(() => {
     if (tilt && planetRef.current) {
       planetRef.current.rotation.x = tilt * Math.PI;
     }
