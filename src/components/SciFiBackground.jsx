@@ -2,13 +2,13 @@ import React, { useRef, useMemo } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
-const SciFiBackground = ({ isActive = false }) => {
+const SciFiBackground = ({ isActive = false, showNebula = true }) => {
   const nebulaeRef = useRef();
   const galaxyRef = useRef();
   
   // Create nebulae particle system
   const nebulaeParticles = useMemo(() => {
-    const particleCount = 2000;
+    const particleCount = 800;
     const positions = new Float32Array(particleCount * 3);
     const colors = new Float32Array(particleCount * 3);
     const sizes = new Float32Array(particleCount);
@@ -36,7 +36,8 @@ const SciFiBackground = ({ isActive = false }) => {
       colors[i * 3 + 2] = color.b;
       
       // Vary particle sizes
-      sizes[i] = Math.random() * 2 + 1; // Between 1-3 units
+      sizes[i] = Math.random() * 1.5 + 0.5; // Between 0.5-2 units
+      
     }
     
     const geometry = new THREE.BufferGeometry();
@@ -144,18 +145,20 @@ const SciFiBackground = ({ isActive = false }) => {
   return (
     <group>
       {/* Nebulae */}
-      <points ref={nebulaeRef}>
-        <primitive object={nebulaeParticles} attach="geometry" />
-        <pointsMaterial 
-          size={2.5} 
-          vertexColors={true} 
-          transparent={true}
-          opacity={0.7}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          sizeAttenuation={true}
-        />
-      </points>
+      {showNebula && (
+        <points ref={nebulaeRef}>
+          <primitive object={nebulaeParticles} attach="geometry" />
+          <pointsMaterial 
+            size={1.5} 
+            vertexColors={true} 
+            transparent={true}
+            opacity={0.7}
+            depthWrite={false}
+            blending={THREE.AdditiveBlending}
+            sizeAttenuation={true}
+          />
+        </points>
+      )}
       
       {/* Distant galaxies */}
       <points ref={galaxyRef}>
