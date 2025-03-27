@@ -16,7 +16,7 @@ import { sciFiPlanets } from './data/sciFiPlanetData';
 
 // Main App component
 export default function App() {
-  const [speedFactor, setSpeedFactor] = useState(1);
+  const [speedFactor, setSpeedFactor] = useState(3);
   const [isSciFiMode, setIsSciFiMode] = useState(false);
   const [cameraPosition, setCameraPosition] = useState([0, 20, 40]);
   const [cameraTarget, setCameraTarget] = useState([0, 0, 0]);
@@ -49,22 +49,21 @@ export default function App() {
     if (!isSciFiMode) return [];
     
     // Use the random seed to ensure consistent positions until mode is toggled
-    const rng = new THREE.MathUtils.seededRandom(randomSeed);
     const positions = [];
     
     // Create 3-5 wormholes
-    const count = 3 + Math.floor(rng() * 3);
+    const count = 3 + Math.floor(THREE.MathUtils.seededRandom(randomSeed) * 3);
     
     for (let i = 0; i < count; i++) {
       // Place wormholes in the outer solar system (beyond Jupiter)
-      const distance = 20 + rng() * 20; // Between orbit of Jupiter and Neptune
-      const angle = rng() * Math.PI * 2;
+      const distance = 20 + THREE.MathUtils.seededRandom(randomSeed + i) * 20; // Between orbit of Jupiter and Neptune
+      const angle = THREE.MathUtils.seededRandom(randomSeed + i + 100) * Math.PI * 2;
       
       positions.push({
         x: Math.cos(angle) * distance,
-        y: (rng() - 0.5) * 5, // Some vertical variation
+        y: (THREE.MathUtils.seededRandom(randomSeed + i + 200) - 0.5) * 5, // Some vertical variation
         z: Math.sin(angle) * distance,
-        size: 1 + rng() * 1 // Size between 1-2
+        size: 1 + THREE.MathUtils.seededRandom(randomSeed + i + 300) * 1 // Size between 1-2
       });
     }
     
@@ -238,9 +237,9 @@ export default function App() {
         bottom: '20px',
         left: '50%',
         transform: 'translateX(-50%)',
-        width: '80%',
+        width: '300px',
         backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-        padding: '15px',
+        padding: '10px',
         borderRadius: '10px',
         display: 'flex',
         flexDirection: 'column',
@@ -250,23 +249,23 @@ export default function App() {
         border: isSciFiMode ? '1px solid #00FFFF' : 'none',
         boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.3)' : 'none',
       }}>
-        <h3 style={{ margin: '0 0 10px 0' }}>Orbital Speed: {speedFactor.toFixed(1)}x</h3>
+        <h3 style={{ margin: '0 0 5px 0', fontSize: '14px' }}>Speed: {speedFactor.toFixed(1)}x</h3>
         <input
           type="range"
-          min="0.1"
-          max="10"
+          min="0.5"
+          max="50"
           step="0.1"
           value={speedFactor}
           onChange={handleSpeedChange}
           style={{ 
-            width: '100%', 
+            width: '90%', 
             cursor: 'pointer',
             accentColor: isSciFiMode ? '#00FFFF' : undefined
           }}
         />
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '5px' }}>
-          <span>0.1x</span>
-          <span>10x</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '90%', marginTop: '2px', fontSize: '12px' }}>
+          <span>0.5x</span>
+          <span>50x</span>
         </div>
       </div>
       

@@ -128,8 +128,7 @@ export const sciFiPlanets = [
       innerRadius: 1.3,
       outerRadius: 2.2, // Extended ring
       color: '#FF6347', // Red-tinted rings
-      opacity: 0.7,
-      animated: true // Animated rings
+      opacity: 0.7
     },
     atmosphere: {
       color: '#FFA500', // Orange atmosphere
@@ -171,8 +170,7 @@ export const sciFiPlanets = [
       innerRadius: 1.2,
       outerRadius: 2.0,
       color: '#00FA9A', // Glowing mint rings
-      opacity: 0.7,
-      animated: true // Animated rings
+      opacity: 0.7
     },
     atmosphere: {
       color: '#48D1CC', // Turquoise atmosphere
@@ -194,13 +192,35 @@ export const sciFiPlanets = [
       innerRadius: 1.2,
       outerRadius: 1.9,
       color: '#1E90FF', // Dodger blue rings
-      opacity: 0.6,
-      animated: true // Animated rings
+      opacity: 0.6
     },
     atmosphere: {
       color: '#0000CD', // Medium blue atmosphere
       opacity: 0.5,
       size: 1.15
+    }
+  },
+  { 
+    name: 'Pluto', 
+    color: '#9370DB', // Medium purple
+    size: 0.3, 
+    orbitRadius: 36, 
+    orbitSpeed: 0.0006,
+    textureMap: './textures/pluto.jpg',
+    rotationSpeed: 0.008,
+    tilt: 0.3,
+    hasRings: true,
+    rings: {
+      innerRadius: 1.1,
+      outerRadius: 2.0,
+      color: '#BA55D3', // Medium orchid rings
+      opacity: 0.8,
+      animated: true // Animated rings
+    },
+    atmosphere: {
+      color: '#E6E6FA', // Lavender atmosphere
+      opacity: 0.3,
+      size: 1.1
     }
   },
 ];

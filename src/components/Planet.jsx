@@ -16,6 +16,9 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
   const planetRef = useRef();
   const { name, color, size, orbitRadius, orbitSpeed, tilt, rotationSpeed } = planet;
   
+  // Create a random initial angle for each planet that persists between renders
+  const initialAngleRef = useRef(Math.random() * Math.PI * 2);
+  
   // Handle texture loading with proper error handling
   const texture = useTexture(planet.textureMap, (texture) => {
     texture.encoding = THREE.sRGBEncoding;
@@ -59,14 +62,17 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
     if (ref.current && planetRef.current) {
       if (orbitRadius) {
         const time = clock.getElapsedTime() * speedFactor;
-        const x = Math.sin(time * orbitSpeed) * orbitRadius;
-        const z = Math.cos(time * orbitSpeed) * orbitRadius;
+        // Add the initial angle to make planets start from random positions
+        // Multiply orbitSpeed by 2.5 to make planets move faster
+        const angle = time * (orbitSpeed * 2.5) + initialAngleRef.current;
+        const x = Math.sin(angle) * orbitRadius;
+        const z = Math.cos(angle) * orbitRadius;
         ref.current.position.set(x, 0, z);
       }
       
-      // Apply rotation
+      // Apply rotation - also increase rotation speed by 1.5x
       if (rotationSpeed) {
-        planetRef.current.rotation.y += rotationSpeed * speedFactor * 0.01;
+        planetRef.current.rotation.y += rotationSpeed * speedFactor * 0.015;
       }
       
       // Apply pulsating effect in sci-fi mode
