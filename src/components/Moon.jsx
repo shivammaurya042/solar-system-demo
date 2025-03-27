@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
+import * as THREE from 'three';
 import SciFiEffect from './SciFiEffect';
 
 // Moon component for planets with moons
@@ -8,35 +9,22 @@ const Moon = ({ moon, parentSize, speedFactor, isSciFiMode = false }) => {
   const ref = useRef();
   const moonRef = useRef();
   
-  // Handle texture loading with error handling
-  let texturePath = moon.textureMap;
-  let texture = null;
-  try {
-    texture = useTexture(texturePath);
-  } catch (error) {
-    console.error(`Failed to load texture for moon: ${texturePath}`, error);
-  }
+  // Handle texture loading with proper configuration
+  const texture = useTexture(moon.textureMap, (texture) => {
+    texture.encoding = THREE.sRGBEncoding;
+    texture.flipY = false;
+  });
   
   // Create material with texture
   const material = React.useMemo(() => {
-    if (texture) {
-      return (
-        <meshStandardMaterial 
-          map={texture}
-          emissive={isSciFiMode && moon.emissive ? moon.color : undefined}
-          emissiveIntensity={isSciFiMode && moon.emissive ? moon.emissiveIntensity || 0.5 : 0}
-        />
-      );
-    } else {
-      return (
-        <meshStandardMaterial 
-          color={moon.color || "#D0D0D0"} 
-          emissive={isSciFiMode && moon.emissive ? moon.color : undefined}
-          emissiveIntensity={isSciFiMode && moon.emissive ? moon.emissiveIntensity || 0.5 : 0}
-        />
-      );
-    }
-  }, [texture, moon.color, isSciFiMode, moon.emissive, moon.emissiveIntensity]);
+    return (
+      <meshStandardMaterial 
+        map={texture}
+        emissive={isSciFiMode && moon.emissive ? moon.color : undefined}
+        emissiveIntensity={isSciFiMode && moon.emissive ? moon.emissiveIntensity || 0.5 : 0}
+      />
+    );
+  }, [texture, isSciFiMode, moon.emissive, moon.color, moon.emissiveIntensity]);
   
   useFrame(({ clock }) => {
     if (ref.current && moonRef.current) {
