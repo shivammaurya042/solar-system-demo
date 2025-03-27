@@ -1,33 +1,42 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { useTexture } from '@react-three/drei';
+import * as THREE from 'three';
 import SunGlow from './SunGlow';
 import Atmosphere from './Atmosphere';
 import PlanetaryRings from './PlanetaryRings';
+import AnimatedRings from './AnimatedRings';
 import Moon from './Moon';
+import SciFiEffect from './SciFiEffect';
+import AlienSpacecraft from './AlienSpacecraft';
 
 // Enhanced Planet component
-const Planet = ({ planet, speedFactor }) => {
+const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
   const ref = useRef();
   const planetRef = useRef();
   const { name, color, size, orbitRadius, orbitSpeed, tilt, rotationSpeed } = planet;
-  const texture = useTexture(planet.textureMap);
   
+  // Handle texture loading with proper error handling
+  const texture = useTexture(planet.textureMap, (texture) => {
+    texture.encoding = THREE.sRGBEncoding;
+    texture.flipY = false;
+  });
+
   // Apply initial tilt if specified
-  useMemo(() => {
+  useEffect(() => {
     if (tilt && planetRef.current) {
       planetRef.current.rotation.x = tilt * Math.PI;
     }
   }, [tilt]);
   
   // Create material with proper texture handling
-  const material = useMemo(() => {
+  const material = React.useMemo(() => {
     if (texture) {
       return (
         <meshStandardMaterial 
           map={texture}
-          emissive={planet.emissive ? color : undefined}
-          emissiveIntensity={planet.emissiveIntensity || 0}
+          emissive={planet.emissive ? (isSciFiMode && planet.pulsating ? color : planet.color || color) : undefined}
+          emissiveIntensity={isSciFiMode && planet.emissive ? (planet.emissiveIntensity || 0) * 1.5 : planet.emissiveIntensity || 0}
           roughness={planet.emissive ? 0.2 : 0.7}
           metalness={planet.emissive ? 0.8 : 0.2}
         />
@@ -36,14 +45,14 @@ const Planet = ({ planet, speedFactor }) => {
       return (
         <meshStandardMaterial 
           color={color}
-          emissive={planet.emissive ? color : undefined}
-          emissiveIntensity={planet.emissiveIntensity || 0}
+          emissive={planet.emissive ? (isSciFiMode && planet.pulsating ? color : planet.color || color) : undefined}
+          emissiveIntensity={isSciFiMode && planet.emissive ? (planet.emissiveIntensity || 0) * 1.5 : planet.emissiveIntensity || 0}
           roughness={planet.emissive ? 0.2 : 0.7}
           metalness={planet.emissive ? 0.8 : 0.2}
         />
       );
     }
-  }, [texture, color, planet.emissive, planet.emissiveIntensity]);
+  }, [texture, color, planet.emissive, planet.emissiveIntensity, isSciFiMode, planet.pulsating, planet.color]);
   
   // Update position and rotation
   useFrame(({ clock }) => {
@@ -59,6 +68,13 @@ const Planet = ({ planet, speedFactor }) => {
       if (rotationSpeed) {
         planetRef.current.rotation.y += rotationSpeed * speedFactor * 0.01;
       }
+      
+      // Apply pulsating effect in sci-fi mode
+      if (isSciFiMode && planet.pulsating && planetRef.current) {
+        const time = clock.getElapsedTime();
+        const pulse = Math.sin(time * 2) * 0.05 + 1;
+        planetRef.current.scale.set(pulse, pulse, pulse);
+      }
     }
   });
   
@@ -71,15 +87,35 @@ const Planet = ({ planet, speedFactor }) => {
           {material}
         </mesh>
         
+        {/* Sci-Fi Effect layer */}
+        {isSciFiMode && (
+          <SciFiEffect 
+            size={size} 
+            pulsating={planet.pulsating} 
+            color={color}
+          />
+        )}
+        
         {/* Rings for gas giants */}
         {planet.hasRings && (
-          <PlanetaryRings 
-            size={size}
-            innerRadius={planet.rings.innerRadius}
-            outerRadius={planet.rings.outerRadius}
-            color={planet.rings.color}
-            opacity={planet.rings.opacity}
-          />
+          isSciFiMode && planet.rings.animated ? (
+            <AnimatedRings 
+              size={size}
+              innerRadius={planet.rings.innerRadius}
+              outerRadius={planet.rings.outerRadius}
+              color={planet.rings.color}
+              opacity={planet.rings.opacity}
+              animated={true}
+            />
+          ) : (
+            <PlanetaryRings 
+              size={size}
+              innerRadius={planet.rings.innerRadius}
+              outerRadius={planet.rings.outerRadius}
+              color={planet.rings.color}
+              opacity={planet.rings.opacity}
+            />
+          )
         )}
       </group>
       
@@ -88,7 +124,7 @@ const Planet = ({ planet, speedFactor }) => {
         <Atmosphere 
           size={size * planet.atmosphere.size}
           color={planet.atmosphere.color}
-          opacity={planet.atmosphere.opacity}
+          opacity={isSciFiMode ? planet.atmosphere.opacity * 1.5 : planet.atmosphere.opacity}
         />
       )}
       
@@ -96,8 +132,19 @@ const Planet = ({ planet, speedFactor }) => {
       {planet.glowIntensity && (
         <SunGlow 
           size={size}
-          intensity={planet.glowIntensity}
-          color={color}
+          intensity={isSciFiMode ? planet.glowIntensity * 1.5 : planet.glowIntensity}
+          color={isSciFiMode && planet.flares ? "#00FFFF" : color}  // Special color in sci-fi mode
+        />
+      )}
+      
+      {/* Alien structures orbiting the planet in sci-fi mode */}
+      {isSciFiMode && planet.alienStructure && (
+        <AlienSpacecraft 
+          position={[0, 0, 0]}
+          orbitRadius={size * 2}
+          orbitSpeed={0.1}
+          size={size * 0.3}
+          color={planet.rings ? planet.rings.color : "#00FFFF"}
         />
       )}
       
@@ -108,6 +155,7 @@ const Planet = ({ planet, speedFactor }) => {
           moon={moon}
           parentSize={size}
           speedFactor={speedFactor}
+          isSciFiMode={isSciFiMode}
         />
       ))}
     </group>
