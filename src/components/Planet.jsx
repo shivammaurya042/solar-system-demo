@@ -16,8 +16,11 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
   const planetRef = useRef();
   const { name, color, size, orbitRadius, orbitSpeed, tilt, rotationSpeed } = planet;
   
-  // Create a random initial angle for each planet that persists between renders
-  const initialAngleRef = useRef(Math.random() * Math.PI * 2);
+  // Use a consistent initial angle based on the planet's properties instead of random
+  const initialAngleRef = useRef(
+    // Use orbit speed to determine starting position - faster planets start further along
+    (orbitSpeed || 0) * Math.PI * 2
+  );
   
   // Handle texture loading with proper error handling
   const texture = useTexture(planet.textureMap, (texture) => {
@@ -85,7 +88,11 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
   });
   
   return (
-    <group ref={ref} position={planet.position || [0, 0, 0]}>
+    <group 
+      ref={ref} 
+      position={[Math.sin(initialAngleRef.current) * orbitRadius, 0, Math.cos(initialAngleRef.current) * orbitRadius]}
+      name={`planet-${name.toLowerCase()}`}
+    >
       {/* Planet sphere */}
       <group ref={planetRef}>
         <mesh>

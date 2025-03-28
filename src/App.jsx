@@ -8,6 +8,7 @@ import Planet from './components/Planet';
 import OrbitPath from './components/OrbitPath';
 import Wormhole from './components/Wormhole';
 import SciFiEventNotification from './components/SciFiEventNotification';
+import SciFiEventEffects from './components/SciFiEventEffects';
 import SciFiBackground from './components/SciFiBackground';
 
 // Import data
@@ -134,60 +135,63 @@ export default function App() {
   
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      <Canvas camera={{ position: cameraPosition, fov: 60 }} style={{ background: 'black' }}>
-        <ambientLight intensity={0.3} />
-        
-        {/* Enhanced lighting for sun */}
-        <pointLight position={[0, 0, 0]} intensity={2} distance={100} color={isSciFiMode ? "#00FFFF" : "#FDB813"} />
-        <pointLight position={[0, 0, 0]} intensity={1} distance={5} color="#FFFFFF" />
-        
-        {/* Sci-fi background (nebulae and galaxies) */}
-        <SciFiBackground isActive={isSciFiMode} />
-        
-        {/* Regular stars background (dimmed in sci-fi mode) */}
-        <Stars radius={100} depth={50} count={5000} factor={4} saturation={isSciFiMode ? 0 : 0.5} fade={true} />
-        
-        {/* Orbit paths */}
-        {activePlanets.filter(planet => planet.orbitRadius).map((planet, index) => (
-          <OrbitPath 
-            key={`orbit-${index}`} 
-            radius={planet.orbitRadius} 
-            color={isSciFiMode ? new THREE.Color(planet.color).getHex() : undefined}
-            opacity={isSciFiMode ? 0.3 : 0.1}
+      {/* Wrap the entire app in the SciFiEventContext provider */}
+      <SciFiEventNotification isSciFiMode={isSciFiMode}>
+        <Canvas camera={{ position: cameraPosition, fov: 60 }} style={{ background: 'black' }}>
+          <ambientLight intensity={0.3} />
+          
+          {/* Enhanced lighting for sun */}
+          <pointLight position={[0, 0, 0]} intensity={2} distance={100} color={isSciFiMode ? "#00FFFF" : "#FDB813"} />
+          <pointLight position={[0, 0, 0]} intensity={1} distance={5} color="#FFFFFF" />
+          
+          {/* Sci-fi background (nebulae and galaxies) */}
+          <SciFiBackground isActive={isSciFiMode} />
+          
+          {/* Regular stars background (dimmed in sci-fi mode) */}
+          <Stars radius={100} depth={50} count={5000} factor={4} saturation={isSciFiMode ? 0 : 0.5} fade={true} />
+          
+          {/* Orbit paths */}
+          {activePlanets.filter(planet => planet.orbitRadius).map((planet, index) => (
+            <OrbitPath 
+              key={`orbit-${index}`} 
+              radius={planet.orbitRadius} 
+              color={isSciFiMode ? new THREE.Color(planet.color).getHex() : undefined}
+              opacity={isSciFiMode ? 0.3 : 0.1}
+            />
+          ))}
+          
+          {/* Planets */}
+          {activePlanets.map((planet, index) => (
+            <Planet 
+              key={`planet-${planet.name}`} 
+              planet={planet} 
+              speedFactor={speedFactor}
+              isSciFiMode={isSciFiMode}
+            />
+          ))}
+          
+          {/* Wormholes (only in sci-fi mode) */}
+          {isSciFiMode && wormholePositions.map((pos, index) => (
+            <Wormhole 
+              key={`wormhole-${index}`}
+              position={[pos.x, pos.y, pos.z]}
+              size={pos.size}
+              onJump={() => handleWormholeJump(pos)}
+            />
+          ))}
+          
+          {/* SciFi Event Effects (when events are active) */}
+          {isSciFiMode && <SciFiEventEffects />}
+          
+          {/* Camera controller */}
+          <OrbitControls 
+            enablePan={true} 
+            enableZoom={true} 
+            enableRotate={true}
+            target={new THREE.Vector3(...cameraTarget)}
           />
-        ))}
-        
-        {/* Planets */}
-        {activePlanets.map((planet, index) => (
-          <Planet 
-            key={`planet-${planet.name}`} 
-            planet={planet} 
-            speedFactor={speedFactor}
-            isSciFiMode={isSciFiMode}
-          />
-        ))}
-        
-        {/* Wormholes (only in sci-fi mode) */}
-        {isSciFiMode && wormholePositions.map((pos, index) => (
-          <Wormhole 
-            key={`wormhole-${index}`}
-            position={[pos.x, pos.y, pos.z]}
-            size={pos.size}
-            onJump={() => handleWormholeJump(pos)}
-          />
-        ))}
-        
-        {/* Camera controller */}
-        <OrbitControls 
-          enablePan={true} 
-          enableZoom={true} 
-          enableRotate={true}
-          target={new THREE.Vector3(...cameraTarget)}
-        />
-      </Canvas>
-      
-      {/* Sci-fi event notifications */}
-      <SciFiEventNotification isSciFiMode={isSciFiMode} />
+        </Canvas>
+      </SciFiEventNotification>
       
       {/* Sci-fi mode toggle button */}
       <div style={{
