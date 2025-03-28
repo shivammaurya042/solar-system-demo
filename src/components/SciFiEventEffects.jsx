@@ -159,6 +159,7 @@ const QuantumEffect = ({ effect, position }) => {
   useFrame(({ clock }) => {
     if (particlesRef.current && particlesRef.current.geometry) {
       const time = clock.getElapsedTime();
+      
       const positions = particlesRef.current.geometry.attributes.position.array;
       
       for (let i = 0; i < positions.length; i += 3) {
@@ -207,40 +208,97 @@ const SpacecraftEffect = ({ effect, position }) => {
   
   return (
     <group ref={ref} position={position}>
-      {/* Spacecraft body */}
-      <mesh>
-        <boxGeometry args={[effect.size || 1, (effect.size || 1) * 0.3, (effect.size || 1) * 0.5]} />
-        <meshStandardMaterial 
-          color={"#AAAAAA"}
-          metalness={0.8}
-          roughness={0.2}
-          emissive={effect.emissiveColor || "#FF5500"}
-          emissiveIntensity={0.5}
+      {/* Spacecraft model */}
+      <group scale={[effect.size || 0.3, effect.size || 0.3, effect.size || 0.3]}>
+        {/* Main spacecraft body */}
+        <mesh>
+          <capsuleGeometry args={[0.5, 1.5, 8, 16]} />
+          <meshStandardMaterial 
+            color="#FFFFFF" 
+            roughness={0.2}
+            metalness={0.9}
+            emissive="#444444"
+            emissiveIntensity={0.3}
+          />
+        </mesh>
+        
+        {/* Spacecraft self-illumination */}
+        <pointLight 
+          position={[0, 0, 0]}
+          color="#FFFFFF"
+          intensity={1}
+          distance={3}
         />
-      </mesh>
-      
-      {/* Wings */}
-      <mesh rotation={[0, 0, 0]} position={[0, 0, (effect.size || 1) * 0.3]}>
-        <boxGeometry args={[(effect.size || 1) * 1.5, (effect.size || 1) * 0.1, (effect.size || 1) * 0.3]} />
-        <meshStandardMaterial color={"#888888"} metalness={0.6} roughness={0.3} />
-      </mesh>
-      
-      {/* Engine glow */}
-      <pointLight 
-        ref={lightRef} 
-        position={[0, 0, -(effect.size || 1) * 0.3]}
-        color={effect.emissiveColor || "#FF5500"}
-        intensity={effect.lightIntensity || 2}
-        distance={10}
-      />
-      <mesh position={[0, 0, -(effect.size || 1) * 0.3]}>
-        <sphereGeometry args={[(effect.size || 1) * 0.2, 8, 8]} />
-        <meshBasicMaterial 
-          color={effect.emissiveColor || "#FF5500"}
-          opacity={0.7}
-          transparent={true}
+        
+        {/* Solar panels */}
+        <mesh rotation={[0, 0, Math.PI/2]} position={[0, 0, 0]}>
+          <boxGeometry args={[3, 0.05, 1]} />
+          <meshStandardMaterial 
+            color="#77AAFF"
+            roughness={0.1}
+            metalness={0.8}
+            emissive="#3366CC"
+            emissiveIntensity={0.5}
+          />
+        </mesh>
+        
+        {/* Antenna */}
+        <mesh position={[0, 0.8, 0]}>
+          <cylinderGeometry args={[0.05, 0.05, 0.8, 8]} />
+          <meshStandardMaterial 
+            color="#DDDDDD" 
+            emissive="#FFFFFF"
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        <mesh position={[0, 1.2, 0]} rotation={[Math.PI/2, 0, 0]}>
+          <coneGeometry args={[0.3, 0.3, 16]} />
+          <meshStandardMaterial 
+            color="#DDDDDD"
+            emissive="#FFFFFF"
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        
+        {/* Thruster */}
+        <mesh position={[0, -1, 0]}>
+          <cylinderGeometry args={[0.3, 0.1, 0.4, 16]} />
+          <meshStandardMaterial 
+            color="#777777"
+            emissive="#FF6600"
+            emissiveIntensity={0.3}
+          />
+        </mesh>
+        
+        {/* Thruster glow */}
+        <pointLight 
+          ref={lightRef}
+          position={[0, -1.5, 0]}
+          color={effect.emissiveColor || "#FF6600"}
+          intensity={3}
+          distance={8}
         />
-      </mesh>
+        
+        {/* Thruster flame */}
+        <mesh position={[0, -1.3, 0]}>
+          <coneGeometry args={[0.2, 0.6, 16]} />
+          <meshBasicMaterial 
+            color={effect.emissiveColor || "#FF6600"} 
+            transparent={true}
+            opacity={0.9}
+          />
+        </mesh>
+        
+        {/* Additional visibility light */}
+        <spotLight
+          position={[0, 2, 0]}
+          angle={0.5}
+          penumbra={0.2}
+          intensity={2}
+          color="#FFFFFF"
+          distance={10}
+        />
+      </group>
     </group>
   );
 };
@@ -336,6 +394,272 @@ const TemporalEffect = ({ effect, position }) => {
           blending={THREE.AdditiveBlending}
         />
       </points>
+    </group>
+  );
+};
+
+// Mars Mission Spacecraft Effect - Realistic Earth to Mars trajectory
+const MarsMissionEffect = ({ effect, position }) => {
+  const ref = useRef();
+  const trajectoryRef = useRef();
+  const spacecraftRef = useRef();
+  const lightRef = useRef();
+  const { clock } = useThree();
+  const [launchProgress, setLaunchProgress] = useState(0);
+  
+  // Earth and Mars positions in the solar system
+  const earthPosition = new THREE.Vector3(10, 0, 0); // Earth's orbit radius is 10
+  const marsPosition = new THREE.Vector3(13, 0, 0);  // Mars' orbit radius is 13
+  
+  // Calculate Hohmann transfer orbit parameters
+  useEffect(() => {
+    if (trajectoryRef.current) {
+      // Create the Hohmann transfer ellipse
+      const r1 = 10; // Earth orbit radius 
+      const r2 = 13; // Mars orbit radius
+      const a = (r1 + r2) / 2; // Semi-major axis
+      const b = Math.sqrt(r1 * r2); // Semi-minor axis approximation
+      const e = Math.sqrt(1 - (b*b)/(a*a)); // Eccentricity
+      
+      // Create the transfer orbit curve
+      const curve = new THREE.EllipseCurve(
+        0, 0,             // Center
+        a, b,             // X and Y radius
+        0, Math.PI,       // Start and end angle (half-ellipse for transfer)
+        false,            // Clockwise
+        Math.PI/2         // Rotation angle to orient correctly
+      );
+      
+      const points = curve.getPoints(100);
+      const geometry = new THREE.BufferGeometry().setFromPoints(points);
+      trajectoryRef.current.geometry = geometry;
+    }
+  }, []);
+  
+  // Animate the spacecraft along the trajectory
+  useFrame(() => {
+    if (ref.current && spacecraftRef.current) {
+      // Get the time from the start of the animation
+      const time = clock.getElapsedTime();
+      const missionDuration = effect.missionDuration || 20; // Total seconds for the mission
+      const progress = Math.min((time % missionDuration) / missionDuration, 1);
+      setLaunchProgress(progress);
+      
+      // Calculate Earth and Mars positions at current time
+      // Earth orbits at 0.005 speed, Mars at 0.004
+      const earthAngle = time * 0.005;
+      const marsAngle = time * 0.004;
+      const earthPos = new THREE.Vector3(
+        Math.cos(earthAngle) * 10,
+        0,
+        Math.sin(earthAngle) * 10
+      );
+      const marsPos = new THREE.Vector3(
+        Math.cos(marsAngle) * 13,
+        0,
+        Math.sin(marsAngle) * 13
+      );
+      
+      // First part of the mission: launch preparation (0-5%)
+      if (progress < 0.05) {
+        // Position the spacecraft on Earth
+        spacecraftRef.current.position.copy(earthPos);
+        spacecraftRef.current.lookAt(marsPos);
+        
+        // Make spacecraft "sit" on the planet surface
+        const launchOffset = new THREE.Vector3(0, 0.8, 0); // Just above the planet
+        spacecraftRef.current.position.add(launchOffset);
+      } 
+      // Second part: launch and escape Earth's orbit (5-15%)
+      else if (progress < 0.15) {
+        const p = (progress - 0.05) / 0.1; // Normalized progress for this phase
+        
+        // Start spiraling outward from Earth
+        const spiralRadius = 0.8 + p * 1.5;
+        const spiralAngle = p * Math.PI * 8;
+        const spiralOffset = new THREE.Vector3(
+          Math.cos(spiralAngle) * spiralRadius,
+          p * 0.5, // Rising up slightly
+          Math.sin(spiralAngle) * spiralRadius
+        );
+        
+        spacecraftRef.current.position.copy(earthPos).add(spiralOffset);
+        spacecraftRef.current.lookAt(marsPos);
+      } 
+      // Third part: Hohmann transfer orbit (15-85%)
+      else if (progress < 0.85) {
+        const p = (progress - 0.15) / 0.7; // Normalized progress for transfer
+        
+        // Earth's position at launch
+        const initialEarthAngle = earthAngle - (0.7 * 0.005 * missionDuration * p);
+        const initialEarthPos = new THREE.Vector3(
+          Math.cos(initialEarthAngle) * 10,
+          0,
+          Math.sin(initialEarthAngle) * 10
+        );
+        
+        // Calculate position along the transfer orbit
+        const r1 = 10; // Earth orbit radius 
+        const r2 = 13; // Mars orbit radius
+        const a = (r1 + r2) / 2; // Semi-major axis
+        
+        // Parametric equation of the transfer ellipse
+        const angle = p * Math.PI; // 0 to π for half-ellipse
+        const r = a * (1 - Math.pow(Math.cos(angle - Math.PI/2), 2) * (1 - r1/r2));
+        
+        // Calculate spacecraft position in the orbit
+        const transferAngle = initialEarthAngle + angle + Math.PI/2;
+        const spacecraftPos = new THREE.Vector3(
+          Math.cos(transferAngle) * r,
+          Math.sin(angle - Math.PI/2) * 0.5, // Small vertical variation for visual interest
+          Math.sin(transferAngle) * r
+        );
+        
+        spacecraftRef.current.position.copy(spacecraftPos);
+        
+        // Orient spacecraft toward Mars
+        spacecraftRef.current.lookAt(marsPos);
+      } 
+      // Final part: Mars approach and landing (85-100%)
+      else {
+        const p = (progress - 0.85) / 0.15; // Normalized progress for this phase
+        
+        // Spiral inward to Mars
+        const spiralRadius = 1.5 * (1 - p) + 0.8;
+        const spiralAngle = p * Math.PI * 6;
+        const spiralOffset = new THREE.Vector3(
+          Math.cos(spiralAngle) * spiralRadius,
+          (1 - p) * 0.5, // Descending
+          Math.sin(spiralAngle) * spiralRadius
+        );
+        
+        spacecraftRef.current.position.copy(marsPos).add(spiralOffset);
+        spacecraftRef.current.lookAt(marsPos);
+      }
+      
+      // Rotate the spacecraft for visual interest
+      spacecraftRef.current.rotation.z = time * 0.1;
+      
+      // Add thruster effect during certain phases
+      if (progress < 0.15 || (progress > 0.75 && progress < 0.95)) {
+        // Thruster is firing during launch or landing
+        if (lightRef.current) {
+          lightRef.current.intensity = 2 + Math.sin(time * 10) * 0.5; // Pulsating light
+        }
+      } else {
+        // Cruising phase - lower intensity
+        if (lightRef.current) {
+          lightRef.current.intensity = 0.5;
+        }
+      }
+    }
+  });
+  
+  return (
+    <group ref={ref}>
+      {/* Transfer orbit trajectory visualization */}
+      <line ref={trajectoryRef}>
+        <lineBasicMaterial 
+          color="#FF9966" 
+          opacity={0.4} 
+          transparent={true} 
+          linewidth={1}
+          dashSize={0.5}
+          gapSize={0.2}
+        />
+      </line>
+      
+      {/* Spacecraft model */}
+      <group ref={spacecraftRef} scale={[effect.size || 0.3, effect.size || 0.3, effect.size || 0.3]}>
+        {/* Main spacecraft body */}
+        <mesh>
+          <capsuleGeometry args={[0.5, 1.5, 8, 16]} />
+          <meshStandardMaterial 
+            color="#FFFFFF" 
+            roughness={0.2}
+            metalness={0.9}
+            emissive="#444444"
+            emissiveIntensity={0.3}
+          />
+        </mesh>
+        
+        {/* Spacecraft self-illumination */}
+        <pointLight 
+          position={[0, 0, 0]}
+          color="#FFFFFF"
+          intensity={1}
+          distance={3}
+        />
+        
+        {/* Solar panels */}
+        <mesh rotation={[0, 0, Math.PI/2]} position={[0, 0, 0]}>
+          <boxGeometry args={[3, 0.05, 1]} />
+          <meshStandardMaterial 
+            color="#77AAFF"
+            roughness={0.1}
+            metalness={0.8}
+            emissive="#3366CC"
+            emissiveIntensity={0.5}
+          />
+        </mesh>
+        
+        {/* Antenna */}
+        <mesh position={[0, 0.8, 0]}>
+          <cylinderGeometry args={[0.05, 0.05, 0.8, 8]} />
+          <meshStandardMaterial 
+            color="#DDDDDD" 
+            emissive="#FFFFFF"
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        <mesh position={[0, 1.2, 0]} rotation={[Math.PI/2, 0, 0]}>
+          <coneGeometry args={[0.3, 0.3, 16]} />
+          <meshStandardMaterial 
+            color="#DDDDDD"
+            emissive="#FFFFFF"
+            emissiveIntensity={0.2}
+          />
+        </mesh>
+        
+        {/* Thruster */}
+        <mesh position={[0, -1, 0]}>
+          <cylinderGeometry args={[0.3, 0.1, 0.4, 16]} />
+          <meshStandardMaterial 
+            color="#777777"
+            emissive="#FF6600"
+            emissiveIntensity={0.3}
+          />
+        </mesh>
+        
+        {/* Thruster glow */}
+        <pointLight 
+          ref={lightRef}
+          position={[0, -1.5, 0]}
+          color={effect.emissiveColor || "#FF6600"}
+          intensity={3}
+          distance={8}
+        />
+        
+        {/* Thruster flame */}
+        <mesh position={[0, -1.3, 0]}>
+          <coneGeometry args={[0.2, 0.6, 16]} />
+          <meshBasicMaterial 
+            color={effect.emissiveColor || "#FF6600"} 
+            transparent={true}
+            opacity={0.9}
+          />
+        </mesh>
+        
+        {/* Additional visibility light */}
+        <spotLight
+          position={[0, 2, 0]}
+          angle={0.5}
+          penumbra={0.2}
+          intensity={2}
+          color="#FFFFFF"
+          distance={10}
+        />
+      </group>
     </group>
   );
 };
@@ -455,6 +779,10 @@ const SciFiEventEffects = () => {
       
       {activeEvent.effect.type === 'gravitationalWaves' && (
         <GravitationalWavesEffect effect={activeEvent.effect} position={targetPosition} />
+      )}
+      
+      {activeEvent.effect.type === 'marsMission' && (
+        <MarsMissionEffect effect={activeEvent.effect} position={targetPosition} />
       )}
     </group>
   );
