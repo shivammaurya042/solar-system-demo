@@ -32,11 +32,11 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
     }
   }, [position, camera]);
   
-  // Create a timer to end spacecraft mode after 20 seconds
+  // Create a timer to end spacecraft mode after 40 seconds
   useEffect(() => {
     const timer = setTimeout(() => {
       if (onEnd) onEnd();
-    }, 20000);
+    }, 40000);
     
     // Set up keyboard controls (reversed direction)
     const handleKeyDown = (e) => {

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
 import * as THREE from 'three';
@@ -25,6 +25,7 @@ export default function App() {
   const [isSpacecraftMode, setIsSpacecraftMode] = useState(false);
   const [spacecraftPosition, setSpacecraftPosition] = useState([0, 0, 0]);
   const [randomSeed, setRandomSeed] = useState(Math.random());
+  const audioRef = useRef(null);
   
   // Use either standard or sci-fi planet data based on the mode
   const activePlanets = useMemo(() => {
@@ -73,6 +74,22 @@ export default function App() {
     return positions;
   }, [isSciFiMode, randomSeed]);
   
+  // Initialize audio
+  useEffect(() => {
+    // Create audio element
+    audioRef.current = new Audio('/sounds/space-journey.mp3');
+    audioRef.current.volume = 0.7;
+    audioRef.current.loop = true;
+    
+    return () => {
+      // Clean up
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+    };
+  }, []);
+  
   // Handle wormhole jump - start spacecraft travel mode
   const handleWormholeJump = useCallback((position) => {
     // Store current camera position before switching to spacecraft mode
@@ -88,27 +105,28 @@ export default function App() {
     const endPos = [position.x, position.y + 2, position.z - 8]; // Position closer to the spacecraft
     const endTarget = [position.x, position.y, position.z];
     
-    // Animate camera to better position for spacecraft transition
-    let progress = 0;
-    const animDuration = 30; // frames (about 0.5 second at 60fps)
+    // Start playing music
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(e => console.log("Audio playback failed:", e));
+    }
     
-    const transitionInterval = setInterval(() => {
-      progress += 1 / animDuration;
+    // Animate camera to better position for spacecraft transition
+    let startTime = null;
+    const animDuration = 800; // milliseconds (0.8 seconds)
+    
+    // Use requestAnimationFrame for smoother animation
+    const animateCamera = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / animDuration, 1);
       
-      if (progress >= 1) {
-        clearInterval(transitionInterval);
-        
-        // After camera is in position, enable spacecraft mode
-        setTimeout(() => {
-          setIsSpacecraftMode(true);
-        }, 100);
-        return;
-      }
+      // Cubic easing function - more gentle acceleration and deceleration
+      const eased = progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
       
-      // Eased transition (ease-in-out)
-      const eased = 0.5 - Math.cos(progress * Math.PI) / 2;
-      
-      // Update camera and target
+      // Update camera and target with the eased value
       setCameraPosition([
         startPos[0] + (endPos[0] - startPos[0]) * eased,
         startPos[1] + (endPos[1] - startPos[1]) * eased,
@@ -120,7 +138,19 @@ export default function App() {
         startTarget[1] + (endTarget[1] - startTarget[1]) * eased,
         startTarget[2] + (endTarget[2] - startTarget[2]) * eased
       ]);
-    }, 16);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animateCamera);
+      } else {
+        // After camera is in position, enable spacecraft mode
+        setTimeout(() => {
+          setIsSpacecraftMode(true);
+        }, 100);
+      }
+    };
+    
+    // Start the animation
+    requestAnimationFrame(animateCamera);
   }, [cameraPosition, cameraTarget]);
   
   // Handle the end of spacecraft mode
@@ -132,22 +162,34 @@ export default function App() {
     const startTarget = [...cameraTarget];
     const endTarget = [0, 0, 0]; // Default target (center)
     
-    // Don't disable spacecraft mode immediately to allow for smooth transition
-    let progress = 0;
-    const animDuration = 60; // frames (about 1 second at 60fps)
+    // Stop music
+    if (audioRef.current) {
+      // Fade out audio
+      const fadeAudio = setInterval(() => {
+        if (audioRef.current.volume > 0.1) {
+          audioRef.current.volume -= 0.1;
+        } else {
+          clearInterval(fadeAudio);
+          audioRef.current.pause();
+          audioRef.current.volume = 0.7; // Reset volume for next time
+        }
+      }, 100);
+    }
     
-    const exitInterval = setInterval(() => {
-      progress += 1 / animDuration;
+    // Don't disable spacecraft mode immediately to allow for smooth transition
+    let startTime = null;
+    const animDuration = 1200; // milliseconds (1.2 seconds)
+    
+    // Use requestAnimationFrame for smoother animation
+    const animateExitCamera = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / animDuration, 1);
       
-      if (progress >= 1) {
-        clearInterval(exitInterval);
-        // Only disable spacecraft mode after camera transition is complete
-        setIsSpacecraftMode(false);
-        return;
-      }
-      
-      // Eased transition (ease-in-out)
-      const eased = 0.5 - Math.cos(progress * Math.PI) / 2;
+      // Cubic easing function - more gentle acceleration and deceleration
+      const eased = progress < 0.5
+        ? 4 * progress * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 3) / 2;
       
       // Update camera position and target
       setCameraPosition([
@@ -161,7 +203,17 @@ export default function App() {
         startTarget[1] + (endTarget[1] - startTarget[1]) * eased,
         startTarget[2] + (endTarget[2] - startTarget[2]) * eased
       ]);
-    }, 16);
+      
+      if (progress < 1) {
+        requestAnimationFrame(animateExitCamera);
+      } else {
+        // Only disable spacecraft mode after camera transition is complete
+        setIsSpacecraftMode(false);
+      }
+    };
+    
+    // Start the animation
+    requestAnimationFrame(animateExitCamera);
   }, [cameraPosition, cameraTarget]);
   
   return (
