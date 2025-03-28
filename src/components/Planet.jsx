@@ -23,10 +23,25 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
   );
   
   // Handle texture loading with proper error handling
-  const texture = useTexture(planet.textureMap, (texture) => {
-    texture.encoding = THREE.sRGBEncoding;
-    texture.flipY = false;
-  });
+  // IMPORTANT: All hooks must be at the top level to follow React's Rules of Hooks
+  const texturePath = planet.textureMap || '';
+  const texture = useTexture(texturePath);
+  
+  // Effect for applying texture settings
+  useEffect(() => {
+    if (texture) {
+      // Special handling for sun texture
+      if (name === 'Sun') {
+        texture.encoding = THREE.sRGBEncoding;
+        texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(2, 2); // Repeat the texture for more detail
+        texture.anisotropy = 16; // Improve texture quality
+      } else {
+        texture.encoding = THREE.sRGBEncoding;
+        texture.flipY = false;
+      }
+    }
+  }, [texture, name]);
 
   // Apply initial tilt if specified
   useEffect(() => {
@@ -38,6 +53,22 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
   // Create material with proper texture handling
   const material = React.useMemo(() => {
     if (texture) {
+      // Special enhanced material for the sun
+      if (name === 'Sun') {
+        return (
+          <meshStandardMaterial 
+            map={texture}
+            emissive={planet.color || color}
+            emissiveIntensity={planet.emissiveIntensity || 1.0}
+            emissiveMap={texture} // Use texture for emissive map too
+            roughness={0.1}
+            metalness={0}
+            transparent={true}
+            opacity={0.9} // Slight transparency for better glow effect
+          />
+        );
+      }
+      // Regular material for other planets
       return (
         <meshStandardMaterial 
           map={texture}
@@ -58,7 +89,7 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
         />
       );
     }
-  }, [texture, color, planet.emissive, planet.emissiveIntensity, isSciFiMode, planet.pulsating, planet.color]);
+  }, [texture, color, planet.emissive, planet.emissiveIntensity, isSciFiMode, planet.pulsating, planet.color, name]);
   
   // Update position and rotation
   useFrame(({ clock }) => {
@@ -142,11 +173,20 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
       )}
       
       {/* Glow effect for sun */}
-      {planet.glowIntensity && (
+      {name === 'Sun' && (
+        <SunGlow 
+          size={size}
+          intensity={isSciFiMode ? 1.8 : 1.5}
+          color={isSciFiMode ? "#00FFFF" : planet.color || color}
+        />
+      )}
+      
+      {/* Glow effect for other emissive planets */}
+      {name !== 'Sun' && planet.glowIntensity && (
         <SunGlow 
           size={size}
           intensity={isSciFiMode ? planet.glowIntensity * 1.5 : planet.glowIntensity}
-          color={isSciFiMode && planet.flares ? "#00FFFF" : color}  // Special color in sci-fi mode
+          color={isSciFiMode && planet.flares ? "#00FFFF" : color}
         />
       )}
       

@@ -10,10 +10,17 @@ const Moon = ({ moon, parentSize, speedFactor, isSciFiMode = false }) => {
   const moonRef = useRef();
   
   // Handle texture loading with proper configuration
-  const texture = useTexture(moon.textureMap, (texture) => {
-    texture.encoding = THREE.sRGBEncoding;
-    texture.flipY = false;
-  });
+  // Use useTexture at the top level without callbacks to follow React's Rules of Hooks
+  const texturePath = moon.textureMap || '';
+  const texture = useTexture(texturePath);
+  
+  // Apply texture settings in a useEffect
+  useEffect(() => {
+    if (texture) {
+      texture.encoding = THREE.sRGBEncoding;
+      texture.flipY = false;
+    }
+  }, [texture]);
   
   // Create material with texture
   const material = React.useMemo(() => {
