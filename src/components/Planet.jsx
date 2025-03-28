@@ -90,7 +90,7 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
   return (
     <group 
       ref={ref} 
-      position={[Math.sin(initialAngleRef.current) * orbitRadius, 0, Math.cos(initialAngleRef.current) * orbitRadius]}
+      position={orbitRadius ? [Math.sin(initialAngleRef.current) * orbitRadius, 0, Math.cos(initialAngleRef.current) * orbitRadius] : planet.position || [0, 0, 0]}
       name={`planet-${name.toLowerCase()}`}
     >
       {/* Planet sphere */}

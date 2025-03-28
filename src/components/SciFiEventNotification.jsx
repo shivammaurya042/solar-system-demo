@@ -14,63 +14,63 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
   
   // List of possible event notifications with detailed implementations
   const possibleEvents = [
-    // { 
-    //   id: 'europa_signal',
-    //   text: "Alien signal detected from Europa", 
-    //   duration: 10000,
-    //   planetTarget: "Europa",
-    //   effect: {
-    //     type: 'signal',
-    //     color: '#00FFFF',
-    //     pulseRate: 0.8,
-    //     signalStrength: 2.5,
-    //     particleCount: 200
-    //   },
-    //   cameraFocus: true
-    // },
-    // { 
-    //   id: 'saturn_wormhole',
-    //   text: "Wormhole opened near Saturn", 
-    //   duration: 15000,
-    //   planetTarget: "Saturn",
-    //   effect: {
-    //     type: 'wormhole',
-    //     size: 2.5,
-    //     color: '#9932CC',
-    //     particleCount: 300,
-    //     distanceFromPlanet: 8
-    //   },
-    //   cameraFocus: true
-    // },
-    // { 
-    //   id: 'jupiter_fluctuations',
-    //   text: "Quantum fluctuations detected in Jupiter's atmosphere", 
-    //   duration: 12000,
-    //   planetTarget: "Jupiter",
-    //   effect: {
-    //     type: 'quantum',
-    //     particleCount: 500,
-    //     color: '#AAFFFF',
-    //     speed: 1.2,
-    //     spread: 3.5
-    //   },
-    //   cameraFocus: true
-    // },
-    // { 
-    //   id: 'mars_spacecraft',
-    //   text: "Unknown spacecraft approaching Mars", 
-    //   duration: 18000,
-    //   planetTarget: "Mars",
-    //   effect: {
-    //     type: 'spacecraft',
-    //     size: 1.2,
-    //     speed: 0.5,
-    //     emissiveColor: '#FF5500',
-    //     lightIntensity: 2,
-    //     orbitPath: true
-    //   },
-    //   cameraFocus: true
-    // },
+      { 
+        id: 'europa_signal',
+        text: "Alien signal detected from Europa", 
+        duration: 10000,
+        planetTarget: "Europa",
+        effect: {
+          type: 'signal',
+          color: '#00FFFF',
+          pulseRate: 0.8,
+          signalStrength: 2.5,
+          particleCount: 200
+        },
+        cameraFocus: true
+      },
+      { 
+        id: 'saturn_wormhole',
+        text: "Wormhole opened near Saturn", 
+        duration: 15000,
+        planetTarget: "Saturn",
+        effect: {
+          type: 'wormhole',
+          size: 2.5,
+          color: '#9932CC',
+          particleCount: 300,
+          distanceFromPlanet: 8
+        },
+        cameraFocus: true
+      },
+      { 
+        id: 'jupiter_fluctuations',
+        text: "Quantum fluctuations detected in Jupiter's atmosphere", 
+        duration: 12000,
+        planetTarget: "Jupiter",
+        effect: {
+          type: 'quantum',
+          particleCount: 500,
+          color: '#AAFFFF',
+          speed: 1.2,
+          spread: 3.5
+        },
+        cameraFocus: true
+      },
+      { 
+        id: 'mars_spacecraft',
+        text: "Unknown spacecraft approaching Mars", 
+        duration: 18000,
+        planetTarget: "Mars",
+        effect: {
+          type: 'spacecraft',
+          size: 1.2,
+          speed: 0.5,
+          emissiveColor: '#FF5500',
+          lightIntensity: 2,
+          orbitPath: true
+        },
+        cameraFocus: true
+      },
     { 
       id: 'mars_curiosity_mission',
       text: "Curiosity rover mission launching from Earth to Mars", 
@@ -101,82 +101,82 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
       },
       cameraFocus: true
     },
-    // { 
-    //   id: 'venus_surge',
-    //   text: "Energy surge detected on Venus", 
-    //   duration: 11000,
-    //   planetTarget: "Venus",
-    //   effect: {
-    //     type: 'energySurge',
-    //     intensity: 3,
-    //     pulseFrequency: 1.5,
-    //     expansionRate: 0.6,
-    //     color: '#FFAA00',
-    //     lightningCount: 8
-    //   },
-    //   cameraFocus: true
-    // },
-    // { 
-    //   id: 'neptune_darkmatter',
-    //   text: "Dark matter concentration forming near Neptune", 
-    //   duration: 16000,
-    //   planetTarget: "Neptune",
-    //   effect: {
-    //     type: 'darkMatter',
-    //     radius: 5,
-    //     density: 0.7,
-    //     gravitationalEffect: true,
-    //     color: '#330066',
-    //     distortionStrength: 2
-    //   },
-    //   cameraFocus: true
-    // },
-    // { 
-    //   id: 'pluto_binary',
-    //   text: "Binary star system detected beyond Pluto", 
-    //   duration: 20000,
-    //   planetTarget: "Pluto",
-    //   effect: {
-    //     type: 'binaryStar',
-    //     starSize: [1.5, 1.2],
-    //     distance: 25,
-    //     colors: ['#FFBB22', '#22AAFF'],
-    //     pulseRate: [0.5, 0.7],
-    //     orbitSpeed: 0.2
-    //   },
-    //   cameraFocus: true
-    // },
-    // { 
-    //   id: 'earth_transmission',
-    //   text: "Subspace transmission intercepted near Earth", 
-    //   duration: 13000,
-    //   planetTarget: "Earth",
-    //   effect: {
-    //     type: 'transmission',
-    //     color: '#00FF00',
-    //     beamWidth: 0.5,
-    //     beamLength: 15,
-    //     pulseFrequency: 1.2,
-    //     messageParticles: true
-    //   },
-    //   cameraFocus: true
-    // },
-    // { 
-    //   id: 'unknown_gravity',
-    //   text: "Gravitational waves detected from unknown source", 
-    //   duration: 17000,
-    //   planetTarget: null,
-    //   effect: {
-    //     type: 'gravitationalWaves',
-    //     intensity: 2,
-    //     waveCount: 5,
-    //     radius: 40,
-    //     speed: 0.8,
-    //     distortionEffect: true,
-    //     color: '#AAAAFF'
-    //   },
-    //   cameraFocus: false
-    // }
+    { 
+      id: 'venus_surge',
+      text: "Energy surge detected on Venus", 
+      duration: 11000,
+      planetTarget: "Venus",
+      effect: {
+        type: 'energySurge',
+        intensity: 3,
+        pulseFrequency: 1.5,
+        expansionRate: 0.6,
+        color: '#FFAA00',
+        lightningCount: 8
+      },
+      cameraFocus: true
+    },
+    { 
+      id: 'neptune_darkmatter',
+      text: "Dark matter concentration forming near Neptune", 
+      duration: 16000,
+      planetTarget: "Neptune",
+      effect: {
+        type: 'darkMatter',
+        radius: 5,
+        density: 0.7,
+        gravitationalEffect: true,
+        color: '#330066',
+        distortionStrength: 2
+      },
+      cameraFocus: true
+    },
+    { 
+      id: 'pluto_binary',
+      text: "Binary star system detected beyond Pluto", 
+      duration: 20000,
+      planetTarget: "Pluto",
+      effect: {
+        type: 'binaryStar',
+        starSize: [1.5, 1.2],
+        distance: 25,
+        colors: ['#FFBB22', '#22AAFF'],
+        pulseRate: [0.5, 0.7],
+        orbitSpeed: 0.2
+      },
+      cameraFocus: true
+    },
+    { 
+      id: 'earth_transmission',
+      text: "Subspace transmission intercepted near Earth", 
+      duration: 13000,
+      planetTarget: "Earth",
+      effect: {
+        type: 'transmission',
+        color: '#00FF00',
+        beamWidth: 0.5,
+        beamLength: 15,
+        pulseFrequency: 1.2,
+        messageParticles: true
+      },
+      cameraFocus: true
+    },
+    { 
+      id: 'unknown_gravity',
+      text: "Gravitational waves detected from unknown source", 
+      duration: 17000,
+      planetTarget: null,
+      effect: {
+        type: 'gravitationalWaves',
+        intensity: 2,
+        waveCount: 5,
+        radius: 40,
+        speed: 0.8,
+        distortionEffect: true,
+        color: '#AAAAFF'
+      },
+      cameraFocus: false
+    }
   ];
   
   // Randomly trigger events when in sci-fi mode
@@ -189,7 +189,7 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
         // Prioritize the Mars mission as the first event when entering sci-fi mode
         const marsEvent = possibleEvents.find(event => event.id === 'mars_curiosity_mission');
         if (marsEvent) {
-          triggerEvent(marsEvent);
+          setNotification(marsEvent);
         } else {
           triggerRandomEvent();
         }
@@ -202,7 +202,7 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
         //   triggerRandomEvent();
         // }
         triggerRandomEvent();
-      }, 30000); // Check every 30 seconds
+      }, 15000); // Check every 15 seconds
       
       return () => {
         clearTimeout(initialDelay);
@@ -257,8 +257,8 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
     // Prioritize mars_curiosity_mission with 80% chance, otherwise choose random event
     const marsMission = possibleEvents.find(e => e.id === 'mars_curiosity_mission');
     
-    // Use the Mars mission with 80% probability, or a random event with 20% probability
-    const randomEvent = Math.random() < 0.8 && marsMission ? 
+    // Use the Mars mission with 20% probability, or a random event with 20% probability
+    const randomEvent = Math.random() < 0.2 && marsMission ? 
       marsMission : 
       possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
       
