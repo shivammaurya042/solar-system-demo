@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import Planet from './components/Planet';
 import OrbitPath from './components/OrbitPath';
 import Wormhole from './components/Wormhole';
+import Spacecraft from './components/Spacecraft';
 import SciFiEventNotification from './components/SciFiEventNotification';
 import SciFiEventEffects from './components/SciFiEventEffects';
 import SciFiBackground from './components/SciFiBackground';
@@ -21,7 +22,8 @@ export default function App() {
   const [isSciFiMode, setIsSciFiMode] = useState(false);
   const [cameraPosition, setCameraPosition] = useState([0, 20, 40]);
   const [cameraTarget, setCameraTarget] = useState([0, 0, 0]);
-  const [cameraAnimation, setCameraAnimation] = useState(null);
+  const [isSpacecraftMode, setIsSpacecraftMode] = useState(false);
+  const [spacecraftPosition, setSpacecraftPosition] = useState([0, 0, 0]);
   const [randomSeed, setRandomSeed] = useState(Math.random());
   
   // Use either standard or sci-fi planet data based on the mode
@@ -71,67 +73,96 @@ export default function App() {
     return positions;
   }, [isSciFiMode, randomSeed]);
   
-  // Handle wormhole jump
+  // Handle wormhole jump - start spacecraft travel mode
   const handleWormholeJump = useCallback((position) => {
-    // Animate camera to new position
+    // Store current camera position before switching to spacecraft mode
+    const prevCameraPos = [...cameraPosition];
+    
+    // Set the initial spacecraft position to be near the wormhole
+    const initialPosition = [position.x, position.y, position.z];
+    setSpacecraftPosition(initialPosition);
+    
+    // Create a smooth camera transition before enabling spacecraft mode
     const startPos = [...cameraPosition];
     const startTarget = [...cameraTarget];
+    const endPos = [position.x, position.y + 2, position.z - 8]; // Position closer to the spacecraft
+    const endTarget = [position.x, position.y, position.z];
     
-    // Calculate a position looking at the wormhole from a distance
-    const direction = new THREE.Vector3(
-      position.x, 
-      position.y, 
-      position.z
-    ).normalize();
-    
-    // Target the wormhole
-    const newTarget = [position.x, position.y, position.z];
-    
-    // Position the camera 15 units away from the wormhole
-    const newPosition = [
-      position.x - direction.x * 15,
-      position.y - direction.y * 15 + 5, // Slightly above for better angle
-      position.z - direction.z * 15
-    ];
-    
-    // Clear any existing animation
-    if (cameraAnimation) {
-      clearInterval(cameraAnimation);
-    }
-    
-    // Create animation
+    // Animate camera to better position for spacecraft transition
     let progress = 0;
-    const animationDuration = 60; // frames
+    const animDuration = 30; // frames (about 0.5 second at 60fps)
     
-    const animation = setInterval(() => {
-      progress += 1 / animationDuration;
+    const transitionInterval = setInterval(() => {
+      progress += 1 / animDuration;
       
       if (progress >= 1) {
-        clearInterval(animation);
-        setCameraAnimation(null);
-        // Trigger a random event after the jump
+        clearInterval(transitionInterval);
+        
+        // After camera is in position, enable spacecraft mode
+        setTimeout(() => {
+          setIsSpacecraftMode(true);
+        }, 100);
         return;
       }
       
-      // Ease in and out
-      const easedProgress = 0.5 - Math.cos(progress * Math.PI) / 2;
+      // Eased transition (ease-in-out)
+      const eased = 0.5 - Math.cos(progress * Math.PI) / 2;
       
-      // Interpolate position and target
+      // Update camera and target
       setCameraPosition([
-        startPos[0] + (newPosition[0] - startPos[0]) * easedProgress,
-        startPos[1] + (newPosition[1] - startPos[1]) * easedProgress,
-        startPos[2] + (newPosition[2] - startPos[2]) * easedProgress
+        startPos[0] + (endPos[0] - startPos[0]) * eased,
+        startPos[1] + (endPos[1] - startPos[1]) * eased,
+        startPos[2] + (endPos[2] - startPos[2]) * eased
       ]);
       
       setCameraTarget([
-        startTarget[0] + (newTarget[0] - startTarget[0]) * easedProgress,
-        startTarget[1] + (newTarget[1] - startTarget[1]) * easedProgress,
-        startTarget[2] + (newTarget[2] - startTarget[2]) * easedProgress
+        startTarget[0] + (endTarget[0] - startTarget[0]) * eased,
+        startTarget[1] + (endTarget[1] - startTarget[1]) * eased,
+        startTarget[2] + (endTarget[2] - startTarget[2]) * eased
       ]);
-    }, 16); // ~60fps
+    }, 16);
+  }, [cameraPosition, cameraTarget]);
+  
+  // Handle the end of spacecraft mode
+  const handleEndSpacecraftMode = useCallback(() => {
+    // Start smooth transition back to normal view
+    const startPos = [...cameraPosition];
+    const endPos = [0, 20, 40]; // Default view position
     
-    setCameraAnimation(animation);
-  }, [cameraPosition, cameraTarget, cameraAnimation]);
+    const startTarget = [...cameraTarget];
+    const endTarget = [0, 0, 0]; // Default target (center)
+    
+    // Don't disable spacecraft mode immediately to allow for smooth transition
+    let progress = 0;
+    const animDuration = 60; // frames (about 1 second at 60fps)
+    
+    const exitInterval = setInterval(() => {
+      progress += 1 / animDuration;
+      
+      if (progress >= 1) {
+        clearInterval(exitInterval);
+        // Only disable spacecraft mode after camera transition is complete
+        setIsSpacecraftMode(false);
+        return;
+      }
+      
+      // Eased transition (ease-in-out)
+      const eased = 0.5 - Math.cos(progress * Math.PI) / 2;
+      
+      // Update camera position and target
+      setCameraPosition([
+        startPos[0] + (endPos[0] - startPos[0]) * eased,
+        startPos[1] + (endPos[1] - startPos[1]) * eased,
+        startPos[2] + (endPos[2] - startPos[2]) * eased
+      ]);
+      
+      setCameraTarget([
+        startTarget[0] + (endTarget[0] - startTarget[0]) * eased,
+        startTarget[1] + (endTarget[1] - startTarget[1]) * eased,
+        startTarget[2] + (endTarget[2] - startTarget[2]) * eased
+      ]);
+    }, 16);
+  }, [cameraPosition, cameraTarget]);
   
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
@@ -171,128 +202,175 @@ export default function App() {
           ))}
           
           {/* Wormholes (only in sci-fi mode) */}
-          {isSciFiMode && wormholePositions.map((pos, index) => (
+          {isSciFiMode && !isSpacecraftMode && wormholePositions.map((pos, index) => (
             <Wormhole 
               key={`wormhole-${index}`}
               position={[pos.x, pos.y, pos.z]}
               size={pos.size}
-              onJump={() => handleWormholeJump(pos)}
+              onJump={handleWormholeJump}
             />
           ))}
+          
+          {/* Spacecraft (only when spacecraft mode is active) */}
+          {isSciFiMode && isSpacecraftMode && (
+            <Spacecraft 
+              position={spacecraftPosition}
+              onEnd={handleEndSpacecraftMode}
+            />
+          )}
           
           {/* SciFi Event Effects (when events are active) */}
           {isSciFiMode && <SciFiEventEffects />}
           
-          {/* Camera controller */}
-          <OrbitControls 
-            enablePan={true} 
-            enableZoom={true} 
-            enableRotate={true}
-            target={new THREE.Vector3(...cameraTarget)}
-          />
+          {/* Camera controller - only active when spacecraft mode is off */}
+          {!isSpacecraftMode && (
+            <OrbitControls 
+              enablePan={true} 
+              enableZoom={true} 
+              enableRotate={true}
+              target={new THREE.Vector3(...cameraTarget)}
+            />
+          )}
         </Canvas>
       </SciFiEventNotification>
       
-      {/* Sci-fi mode toggle button */}
-      <div style={{
-        position: 'absolute',
-        top: '20px',
-        left: '20px',
-        backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-        padding: '15px',
-        borderRadius: '10px',
-        color: isSciFiMode ? '#00FFFF' : 'white',
-        fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
-        cursor: 'pointer',
-        border: isSciFiMode ? '1px solid #00FFFF' : 'none',
-        boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.5)' : 'none',
-        transition: 'all 0.3s ease'
-      }} onClick={toggleSciFiMode}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          {isSciFiMode && (
-            <div style={{ 
-              width: '12px', 
-              height: '12px', 
-              borderRadius: '50%', 
-              backgroundColor: '#00FFFF', 
-              marginRight: '10px',
-              boxShadow: '0 0 8px #00FFFF',
-              animation: 'pulse 2s infinite'
-            }} />
-          )}
-          <h3 style={{ margin: 0 }}>
-            {isSciFiMode ? "Disable Sci-Fi Mode" : "Enable Sci-Fi Mode"}
-          </h3>
-        </div>
-        {isSciFiMode && (
-          <style>{`
-            @keyframes pulse {
-              0% { opacity: 0.6; }
-              50% { opacity: 1; }
-              100% { opacity: 0.6; }
-            }
-          `}</style>
-        )}
-      </div>
-      
-      {/* Speed control slider */}
-      <div style={{
-        position: 'absolute',
-        bottom: '20px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '300px',
-        backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-        padding: '10px',
-        borderRadius: '10px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        color: isSciFiMode ? '#00FFFF' : 'white',
-        fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
-        border: isSciFiMode ? '1px solid #00FFFF' : 'none',
-        boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.3)' : 'none',
-      }}>
-        <h3 style={{ margin: '0 0 5px 0', fontSize: '14px' }}>Speed: {speedFactor.toFixed(1)}x</h3>
-        <input
-          type="range"
-          min="0.5"
-          max="50"
-          step="0.1"
-          value={speedFactor}
-          onChange={handleSpeedChange}
-          style={{ 
-            width: '90%', 
+      {/* Control UI elements - these should be hidden in spacecraft mode */}
+      {!isSpacecraftMode && (
+        <>
+          {/* Sci-fi mode toggle button */}
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            left: '20px',
+            backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+            padding: '15px',
+            borderRadius: '10px',
+            color: isSciFiMode ? '#00FFFF' : 'white',
+            fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
             cursor: 'pointer',
-            accentColor: isSciFiMode ? '#00FFFF' : undefined
-          }}
-        />
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '90%', marginTop: '2px', fontSize: '12px' }}>
-          <span>0.5x</span>
-          <span>50x</span>
-        </div>
-      </div>
+            border: isSciFiMode ? '1px solid #00FFFF' : 'none',
+            boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.5)' : 'none',
+            transition: 'all 0.3s ease'
+          }} onClick={toggleSciFiMode}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              {isSciFiMode && (
+                <div style={{ 
+                  width: '12px', 
+                  height: '12px', 
+                  borderRadius: '50%', 
+                  backgroundColor: '#00FFFF', 
+                  marginRight: '10px',
+                  boxShadow: '0 0 8px #00FFFF',
+                  animation: 'pulse 2s infinite'
+                }} />
+              )}
+              <h3 style={{ margin: 0 }}>
+                {isSciFiMode ? "Disable Sci-Fi Mode" : "Enable Sci-Fi Mode"}
+              </h3>
+            </div>
+            {isSciFiMode && (
+              <style>{`
+                @keyframes pulse {
+                  0% { opacity: 0.6; }
+                  50% { opacity: 1; }
+                  100% { opacity: 0.6; }
+                }
+              `}</style>
+            )}
+          </div>
+          
+          {/* Speed control slider */}
+          <div style={{
+            position: 'absolute',
+            bottom: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '300px',
+            backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+            padding: '10px',
+            borderRadius: '10px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            color: isSciFiMode ? '#00FFFF' : 'white',
+            fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
+            border: isSciFiMode ? '1px solid #00FFFF' : 'none',
+            boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.3)' : 'none',
+          }}>
+            <h3 style={{ margin: '0 0 5px 0', fontSize: '14px' }}>Speed: {speedFactor.toFixed(1)}x</h3>
+            <input
+              type="range"
+              min="0.5"
+              max="50"
+              step="0.1"
+              value={speedFactor}
+              onChange={handleSpeedChange}
+              style={{ 
+                width: '90%', 
+                cursor: 'pointer',
+                accentColor: isSciFiMode ? '#00FFFF' : undefined
+              }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', width: '90%', marginTop: '2px', fontSize: '12px' }}>
+              <span>0.5x</span>
+              <span>50x</span>
+            </div>
+          </div>
+          
+          {/* Info panel */}
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+            padding: '15px',
+            borderRadius: '10px',
+            color: isSciFiMode ? '#00FFFF' : 'white',
+            fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
+            maxWidth: '300px',
+            border: isSciFiMode ? '1px solid #00FFFF' : 'none',
+            boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.3)' : 'none',
+          }}>
+            <h3 style={{ margin: '0 0 10px 0' }}>{isSciFiMode ? "Galactic Explorer" : "Solar System Demo"}</h3>
+            <p style={{ margin: '0 0 5px 0' }}>Use mouse to rotate, zoom and pan</p>
+            {isSciFiMode && (
+              <p style={{ margin: '5px 0', color: '#FF00FF' }}>Click wormholes to travel in a spacecraft!</p>
+            )}
+          </div>
+        </>
+      )}
       
-      {/* Info panel */}
-      <div style={{
-        position: 'absolute',
-        top: '20px',
-        right: '20px',
-        backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-        padding: '15px',
-        borderRadius: '10px',
-        color: isSciFiMode ? '#00FFFF' : 'white',
-        fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
-        maxWidth: '300px',
-        border: isSciFiMode ? '1px solid #00FFFF' : 'none',
-        boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.3)' : 'none',
-      }}>
-        <h3 style={{ margin: '0 0 10px 0' }}>{isSciFiMode ? "Galactic Explorer" : "Solar System Demo"}</h3>
-        <p style={{ margin: '0 0 5px 0' }}>Use mouse to rotate, zoom and pan</p>
-        {isSciFiMode && (
-          <p style={{ margin: '5px 0', color: '#FF00FF' }}>Click wormholes to jump to new locations!</p>
-        )}
-      </div>
+      {/* Spacecraft mode controls info */}
+      {isSpacecraftMode && (
+        <div style={{
+          position: 'absolute',
+          bottom: '20px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'rgba(0, 40, 80, 0.8)',
+          padding: '15px',
+          borderRadius: '10px',
+          color: '#00FFFF',
+          fontFamily: 'monospace',
+          textAlign: 'center',
+          border: '1px solid #00FFFF',
+          boxShadow: '0 0 15px rgba(0, 255, 255, 0.5)',
+        }}>
+          <h3 style={{ margin: '0 0 10px 0' }}>Spacecraft Control Mode</h3>
+          <p>Use arrow keys to navigate</p>
+          <p>Returning to normal mode in <span id="countdown">20</span> seconds</p>
+          <script dangerouslySetInnerHTML={{
+            __html: `
+              let count = 20;
+              const interval = setInterval(() => {
+                count--;
+                document.getElementById('countdown').textContent = count;
+                if (count <= 0) clearInterval(interval);
+              }, 1000);
+            `
+          }} />
+        </div>
+      )}
     </div>
   );
 }

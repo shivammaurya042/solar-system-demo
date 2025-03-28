@@ -89,16 +89,16 @@ const Wormhole = ({ position, size = 1.5, onJump }) => {
     }
   });
   
-  // Handle portal click - trigger jump to random location
+  // Handle portal click - activate spacecraft mode
   const handleClick = () => {
     if (!activated) {
       setActivated(true);
       
-      // Call the jump callback after the wormhole animation (1.5 seconds)
+      // Call the jump callback after a brief animation delay (0.5 seconds)
       setTimeout(() => {
-        if (onJump) onJump();
+        if (onJump) onJump({x: position[0], y: position[1], z: position[2]});
         setActivated(false);
-      }, 1500);
+      }, 500);
     }
   };
   
