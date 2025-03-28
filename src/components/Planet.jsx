@@ -176,7 +176,7 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
       {name === 'Sun' && (
         <SunGlow 
           size={size}
-          intensity={isSciFiMode ? 1.8 : 1.5}
+          intensity={isSciFiMode ? 1.2 : 0.8}
           color={isSciFiMode ? "#00FFFF" : planet.color || color}
         />
       )}
@@ -185,7 +185,7 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
       {name !== 'Sun' && planet.glowIntensity && (
         <SunGlow 
           size={size}
-          intensity={isSciFiMode ? planet.glowIntensity * 1.5 : planet.glowIntensity}
+          intensity={isSciFiMode ? planet.glowIntensity : planet.glowIntensity * 0.8}
           color={isSciFiMode && planet.flares ? "#00FFFF" : color}
         />
       )}
