@@ -501,7 +501,7 @@ export default function App() {
                   body.scifi-active .info-panel {
                     right: 20px !important;
                     left: auto !important;
-                    top: 75px !important;
+                    top: 20px !important;
                     max-width: min(250px, 45vw) !important;
                   }
                   .scifi-toggle-btn {
@@ -520,15 +520,16 @@ export default function App() {
                   }
                   .info-panel h3 {
                     margin: 0 0 4px 0 !important;
-                    font-size: 1.1em !important;
+                    font-size: 1.0em !important;
                   }
                   .scifi-toggle-btn {
                     padding: 7px !important;
                     font-size: clamp(0.8rem, 3.2vw, 1.1rem) !important;
                     min-width: 80px !important;
+                    max-width: 140px !important;
                   }
                   body.scifi-active .info-panel {
-                    top: 75px !important;
+                    top: 20px !important;
                     right: 10px !important;
                   }
                 }
