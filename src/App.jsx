@@ -235,11 +235,14 @@ export default function App() {
       {/* Wrap the entire app in the SciFiEventContext provider */}
       <SciFiEventNotification isSciFiMode={isSciFiMode}>
         <Canvas camera={{ position: cameraPosition, fov: 60 }} style={{ background: 'black' }}>
-          <ambientLight intensity={0.3} />
+          <ambientLight intensity={0.6} />
           
           {/* Enhanced lighting for sun */}
-          <pointLight position={[0, 0, 0]} intensity={2} distance={100} color={isSciFiMode ? "#00FFFF" : "#FDB813"} />
-          <pointLight position={[0, 0, 0]} intensity={1} distance={5} color="#FFFFFF" />
+          <pointLight position={[0, 0, 0]} intensity={2.5} distance={150} color={isSciFiMode ? "#00FFFF" : "#FDB813"} />
+          <pointLight position={[0, 0, 0]} intensity={1.5} distance={10} color="#FFFFFF" />
+          
+          {/* Additional fill light to better illuminate planets */}
+          <hemisphereLight skyColor="#FFFFFF" groundColor="#303030" intensity={0.4} />
           
           {/* Sci-fi background (nebulae and galaxies) */}
           <SciFiBackground isActive={isSciFiMode} />

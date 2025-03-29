@@ -77,8 +77,8 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
           map={texture}
           emissive={planet.emissive ? (isSciFiMode && planet.pulsating ? color : planet.color || color) : undefined}
           emissiveIntensity={isSciFiMode && planet.emissive ? (planet.emissiveIntensity || 0) * 1.5 : planet.emissiveIntensity || 0}
-          roughness={planet.emissive ? 0.2 : 0.7}
-          metalness={planet.emissive ? 0.8 : 0.2}
+          roughness={planet.emissive ? 0.2 : 0.4}
+          metalness={planet.emissive ? 0.8 : 0.1}
         />
       );
     } else {
@@ -87,8 +87,8 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
           color={color}
           emissive={planet.emissive ? (isSciFiMode && planet.pulsating ? color : planet.color || color) : undefined}
           emissiveIntensity={isSciFiMode && planet.emissive ? (planet.emissiveIntensity || 0) * 1.5 : planet.emissiveIntensity || 0}
-          roughness={planet.emissive ? 0.2 : 0.7}
-          metalness={planet.emissive ? 0.8 : 0.2}
+          roughness={planet.emissive ? 0.2 : 0.4}
+          metalness={planet.emissive ? 0.8 : 0.1}
         />
       );
     }
