@@ -367,8 +367,8 @@ export default function App() {
             fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
             zIndex: 10
           }} className="info-panel">
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1em', whiteSpace: 'normal' }}>{isSciFiMode ? "Galactic Explorer" : "Solar System Simulation"}</h3>
-            {!isSciFiMode && <p style={{ margin: '0 0 5px 0', fontSize: '0.9em', whiteSpace: 'normal' }}>Use mouse to rotate, zoom and pan</p>}
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1em', whiteSpace: 'normal' }}>{isSciFiMode ? "Galactic Explorer" : ""}</h3>
+            {!isSciFiMode && <p style={{ margin: '0 0 5px 0', fontSize: '0.9em', whiteSpace: 'normal' }}></p>}
             {isSciFiMode && (
               <p style={{ margin: '5px 0', color: '#FF00FF', fontSize: '0.9em', whiteSpace: 'normal' }}>Click wormholes to travel in a spacecraft!</p>
             )}
