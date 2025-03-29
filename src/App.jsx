@@ -513,20 +513,24 @@ export default function App() {
                 
                 @media screen and (max-width: 480px) {
                   .info-panel {
-                    padding: 8px !important;
+                    padding: 5px !important;
                     max-width: 45vw !important;
-                    font-size: clamp(0.75rem, 2.2vw, 1rem) !important;
+                    font-size: clamp(0.65rem, 2vw, 0.9rem) !important;
                     text-align: center !important;
                   }
                   .info-panel h3 {
-                    margin: 0 0 4px 0 !important;
-                    font-size: 1.0em !important;
+                    margin: 0 0 2px 0 !important;
+                    font-size: 0.9em !important;
+                  }
+                  .info-panel p {
+                    margin: 3px 0 !important;
+                    line-height: 1.1 !important;
                   }
                   .scifi-toggle-btn {
                     padding: 7px !important;
                     font-size: clamp(0.8rem, 3.2vw, 1.1rem) !important;
-                    min-width: 80px !important;
-                    max-width: 140px !important;
+                    min-width: 90px !important;
+                    max-width: 160px !important;
                   }
                   body.scifi-active .info-panel {
                     top: 20px !important;

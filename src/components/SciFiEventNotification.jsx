@@ -352,6 +352,7 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
                 right: auto !important;
                 transform: translateX(-50%) !important;
                 max-width: 100% !important;
+                width: 60% !important;
                 letter-spacing: 0 !important;
                 border-width: 1px !important;
                 box-shadow: 0 0 5px #00FFFF !important;
