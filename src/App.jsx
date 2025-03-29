@@ -532,7 +532,7 @@ export default function App() {
               {/* About Us button - bottom left corner */}
               <div style={{
                 position: 'absolute',
-                bottom: '60px', 
+                bottom: '80px', 
                 left: '20px',
                 backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
                 padding: isSciFiMode ? '10px 15px' : '8px 12px',
@@ -558,7 +558,7 @@ export default function App() {
               {/* Speed control slider */}
               <div style={{
                 position: 'absolute', 
-                bottom: '60px', 
+                bottom: '80px', 
                 left: '50%', 
                 transform: 'translateX(-50%)', 
                 width: 'min(220px, 80vw)', 
@@ -607,7 +607,7 @@ export default function App() {
           {isSpacecraftMode && (
             <div style={{
               position: 'absolute',
-              bottom: '60px', 
+              bottom: '80px', 
               left: '50%',
               transform: 'translateX(-50%)',
               backgroundColor: 'rgba(0, 40, 80, 0.8)',
