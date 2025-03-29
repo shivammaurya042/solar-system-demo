@@ -556,9 +556,7 @@ export default function App() {
                 fontSize: 'clamp(0.7rem, 2.8vw, 0.9rem)',
                 zIndex: 10
               }} onClick={() => {
-                console.log("About Us button clicked, current state:", isAboutUsOpen);
-                setIsAboutUsOpen(true);
-                console.log("About Us state after click:", !isAboutUsOpen);
+                setIsAboutUsOpen(prev => !prev);
               }} className="about-us-btn">
                 <h3 style={{ margin: 0, fontSize: 'inherit', whiteSpace: 'nowrap' }}>
                   {isSciFiMode ? "ABOUT" : "About"}

@@ -257,7 +257,6 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
     // Choose a random event with equal probability for all events
     const randomEvent = possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
       
-    console.log("Triggering sci-fi event:", randomEvent);
     setNotification(randomEvent);
   };
   

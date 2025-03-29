@@ -693,11 +693,9 @@ const SciFiEventEffects = () => {
         if (object.name && (object.name.includes('planet-') || object.name.toLowerCase() === activeEvent.planetTarget?.toLowerCase())) {
           let planetName = object.name.includes('planet-') ? object.name.replace('planet-', '') : object.name;
           newPositions[planetName.toLowerCase()] = object.position.clone();
-          console.log("Found planet:", planetName, object.position);
         }
       });
       if (Object.keys(newPositions).length > 0) {
-        console.log("Collected planet positions:", newPositions);
         setPlanetPositions(newPositions);
       } else {
         console.warn("No planets found in scene with proper names");
