@@ -27,12 +27,23 @@ export default function App() {
   const [spacecraftPosition, setSpacecraftPosition] = useState([0, 0, 0]);
   const [randomSeed, setRandomSeed] = useState(Math.random());
   const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const audioRef = useRef(null);
   
   // Use either standard or sci-fi planet data based on the mode
   const activePlanets = useMemo(() => {
     return isSciFiMode ? sciFiPlanets : planets;
   }, [isSciFiMode]);
+  
+  // Handle loading state
+  useEffect(() => {
+    // Simulate asset loading time
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 3000); // Show loading screen for at least 3 seconds
+    
+    return () => clearTimeout(loadingTimer);
+  }, []);
   
   // Handle speed change with debounce to prevent excessive re-renders
   const handleSpeedChange = (e) => {
@@ -263,290 +274,358 @@ export default function App() {
   
   return (
     <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
-      {/* Wrap the entire app in the SciFiEventContext provider */}
-      <SciFiEventNotification isSciFiMode={isSciFiMode}>
-        <Canvas camera={{ position: cameraPosition, fov: 60 }} style={{ background: 'black' }}>
-          <ambientLight intensity={0.6} />
-          
-          {/* Enhanced lighting for sun */}
-          <pointLight position={[0, 0, 0]} intensity={2.5} distance={150} color={isSciFiMode ? "#00FFFF" : "#FDB813"} />
-          <pointLight position={[0, 0, 0]} intensity={1.5} distance={10} color="#FFFFFF" />
-          
-          {/* Additional fill light to better illuminate planets */}
-          <hemisphereLight skyColor="#FFFFFF" groundColor="#303030" intensity={0.4} />
-          
-          {/* Sci-fi background (nebulae and galaxies) */}
-          <SciFiBackground isActive={isSciFiMode} />
-          
-          {/* Regular stars background (dimmed in sci-fi mode) */}
-          <Stars radius={100} depth={50} count={5000} factor={4} saturation={isSciFiMode ? 0 : 0.5} fade={true} />
-          
-          {/* Orbit paths */}
-          {activePlanets.filter(planet => planet.orbitRadius).map((planet, index) => (
-            <OrbitPath 
-              key={`orbit-${index}`} 
-              radius={planet.orbitRadius} 
-              color={isSciFiMode ? new THREE.Color(planet.color).getHex() : undefined}
-              opacity={isSciFiMode ? 0.3 : 0.1}
-            />
-          ))}
-          
-          {/* Planets */}
-          {activePlanets.map((planet, index) => (
-            <Planet 
-              key={`planet-${planet.name}`} 
-              planet={planet} 
-              speedFactor={speedFactor}
-              isSciFiMode={isSciFiMode}
-            />
-          ))}
-          
-          {/* Wormholes (only in sci-fi mode) */}
-          {isSciFiMode && !isSpacecraftMode && wormholePositions.map((pos, index) => (
-            <Wormhole 
-              key={`wormhole-${index}`}
-              position={[pos.x, pos.y, pos.z]}
-              size={pos.size}
-              onJump={handleWormholeJump}
-            />
-          ))}
-          
-          {/* Spacecraft (only when spacecraft mode is active) */}
-          {isSciFiMode && isSpacecraftMode && (
-            <Spacecraft 
-              position={spacecraftPosition}
-              onEnd={handleEndSpacecraftMode}
-            />
-          )}
-          
-          {/* SciFi Event Effects (when events are active) */}
-          {isSciFiMode && <SciFiEventEffects />}
-          
-          {/* Camera controller - only active when spacecraft mode is off */}
-          {!isSpacecraftMode && (
-            <OrbitControls 
-              enablePan={true} 
-              enableZoom={true} 
-              enableRotate={true}
-              target={new THREE.Vector3(...cameraTarget)}
-            />
-          )}
-        </Canvas>
-      </SciFiEventNotification>
-      
-      {/* About Us component */}
-      <AboutUs 
-        isOpen={isAboutUsOpen} 
-        onClose={() => setIsAboutUsOpen(false)} 
-        isSciFiMode={isSciFiMode} 
-      />
-      
-      {/* Control UI elements - these should be hidden in spacecraft mode */}
-      {!isSpacecraftMode && (
-        <>
-          {/* Sci-fi mode toggle button */}
-          <div style={{
-            position: 'absolute',
-            top: '20px',
-            left: '20px',
-            backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-            padding: isSciFiMode ? '12px' : '10px',
-            borderRadius: '10px',
-            color: isSciFiMode ? '#00FFFF' : 'white',
-            fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
-            cursor: 'pointer',
-            border: isSciFiMode ? '1px solid #00FFFF' : 'none',
-            boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.5)' : 'none',
-            transition: 'all 0.3s ease',
-            fontSize: 'clamp(0.8rem, 3vw, 1.1rem)',
-            maxWidth: '45vw',
-            zIndex: 10
-          }} onClick={toggleSciFiMode} className="scifi-toggle-btn">
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              {isSciFiMode && (
-                <div style={{ 
-                  width: '10px', 
-                  height: '10px', 
-                  borderRadius: '50%', 
-                  backgroundColor: '#00FFFF', 
-                  marginRight: '6px',
-                  boxShadow: '0 0 8px #00FFFF',
-                  animation: 'pulse 2s infinite'
-                }} />
-              )}
-              <h3 style={{ margin: 0, fontSize: 'inherit', whiteSpace: 'nowrap' }}>
-                {isSciFiMode ? "Disable Sci-Fi Mode" : "Enable Sci-Fi Mode"}
-              </h3>
-            </div>
-            {isSciFiMode && (
-              <style>{`
-                @keyframes pulse {
-                  0% { opacity: 0.6; }
-                  50% { opacity: 1; }
-                  100% { opacity: 0.6; }
-                }
-              `}</style>
-            )}
-          </div>
-          
-          {/* Info panel */}
-          <div style={{
-            position: 'absolute',
-            top: '20px',
-            right: '20px',
-            backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-            padding: '10px',
-            borderRadius: '10px',
-            color: isSciFiMode ? '#00FFFF' : 'white',
-            fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
-            maxWidth: 'min(300px, 40vw)',
-            border: isSciFiMode ? '1px solid #00FFFF' : 'none',
-            boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.3)' : 'none',
-            fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
-            zIndex: 10
-          }} className="info-panel">
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1em', whiteSpace: 'normal' }}>{isSciFiMode ? "Galactic Explorer" : ""}</h3>
-            {!isSciFiMode && <p style={{ margin: '0 0 5px 0', fontSize: '0.9em', whiteSpace: 'normal' }}></p>}
-            {isSciFiMode && (
-              <p style={{ margin: '5px 0', color: '#FF00FF', fontSize: '0.9em', whiteSpace: 'normal' }}>Click wormholes to travel in a spacecraft!</p>
-            )}
-          </div>
-          
-          <style>{`
-            @media screen and (max-width: 768px) {
-              .info-panel {
-                padding: 8px !important;
-                font-size: clamp(0.6rem, 2vw, 0.9rem) !important;
-              }
-              body.scifi-active .info-panel {
-                right: auto !important;
-                left: 20px !important;
-                top: 75px !important;
-                max-width: min(250px, 45vw) !important;
-              }
-              .scifi-toggle-btn {
-                padding: 10px !important;
-                font-size: clamp(0.9rem, 3.5vw, 1.2rem) !important;
-                min-width: 120px !important;
-              }
-            }
-            
-            @media screen and (max-width: 480px) {
-              .info-panel {
-                padding: 6px !important;
-                max-width: 45vw !important;
-                font-size: clamp(0.5rem, 1.8vw, 0.8rem) !important;
-              }
-              .info-panel h3 {
-                margin: 0 0 4px 0 !important;
-                font-size: 1em !important;
-              }
-              .scifi-toggle-btn {
-                padding: 10px !important;
-                font-size: clamp(0.7rem, 3.2vw, 1rem) !important;
-                min-width: 100px !important;
-              }
-              body.scifi-active .info-panel {
-                top: 65px !important;
-              }
-            }
-          `}</style>
-          
-          {/* About Us button - bottom left corner */}
-          <div style={{
-            position: 'absolute',
-            bottom: '40px', 
-            left: '20px',
-            backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-            padding: isSciFiMode ? '10px 15px' : '8px 12px',
-            borderRadius: '10px',
-            color: isSciFiMode ? '#00FFFF' : 'white',
-            fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
-            cursor: 'pointer',
-            border: isSciFiMode ? '1px solid #00FFFF' : 'none',
-            boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.4)' : 'none',
-            transition: 'all 0.3s ease',
-            fontSize: 'clamp(0.7rem, 2.8vw, 0.9rem)',
-            zIndex: 10
-          }} onClick={() => {
-            console.log("About Us button clicked, current state:", isAboutUsOpen);
-            setIsAboutUsOpen(true);
-            console.log("About Us state after click:", !isAboutUsOpen);
-          }} className="about-us-btn">
-            <h3 style={{ margin: 0, fontSize: 'inherit', whiteSpace: 'nowrap' }}>
-              {isSciFiMode ? "ABOUT" : "About"}
-            </h3>
-          </div>
-          
-          {/* Speed control slider */}
-          <div style={{
-            position: 'absolute', 
-            bottom: '28px', 
-            left: '50%', 
-            transform: 'translateX(-50%)', 
-            width: 'min(220px, 80vw)', 
-            backgroundColor: 'rgba(0, 0, 0, 0.4)', 
-            padding: '5px', 
-            borderRadius: '6px', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            color: 'white', 
-            fontFamily: 'Arial, sans-serif', 
-            border: 'none', 
-            boxShadow: 'none', 
-            fontSize: 'clamp(0.5rem, 2vw, 0.8rem)'
-          }} data-component-name="App">
-            <h3 style={{ margin: '0px 0px 2px', fontSize: '0.8em', color: 'rgba(255, 255, 255, 0.7)' }}>Speed: {speedFactor.toFixed(1)}x</h3>
-            <input 
-              type="range" 
-              min="0.5" 
-              max="50" 
-              step="0.1" 
-              value={speedFactor} 
-              onChange={handleSpeedChange} 
-              style={{ 
-                width: '80%', 
-                height: '12px',
-                cursor: 'pointer'
-              }} 
-              data-component-name="App" 
-            />
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              width: '80%', 
-              marginTop: '1px', 
-              fontSize: '0.6em' 
-            }} data-component-name="App">
-              <span>0.5x</span>
-              <span data-component-name="App">50x</span>
-            </div>
-          </div>
-        </>
-      )}
-      
-      {/* Exit spacecraft button */}
-      {isSpacecraftMode && (
+      {isLoading ? (
         <div style={{
           position: 'absolute',
-          bottom: '40px', 
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: 'rgba(0, 40, 80, 0.8)',
-          padding: '15px',
-          borderRadius: '10px',
-          color: '#00FFFF',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#000',
+          color: '#fff',
           fontFamily: 'monospace',
-          textAlign: 'center',
-          border: '1px solid #00FFFF',
-          boxShadow: '0 0 15px rgba(0, 255, 255, 0.5)',
-          fontSize: '0.9rem',
-          cursor: 'pointer',
-          zIndex: 1000
-        }} onClick={handleEndSpacecraftMode}>
-          EXIT SPACECRAFT
+          zIndex: 9999
+        }}>
+          <h2 style={{ 
+            fontSize: 'clamp(1.5rem, 5vw, 2.5rem)',
+            textAlign: 'center',
+            marginBottom: '20px'
+          }}>
+            Loading Solar System
+          </h2>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <div style={{
+              width: '150px',
+              height: '3px',
+              backgroundColor: '#111',
+              borderRadius: '3px',
+              overflow: 'hidden',
+              position: 'relative',
+              boxShadow: '0 0 10px rgba(0, 100, 255, 0.5)'
+            }}>
+              <div style={{
+                position: 'absolute',
+                width: '50%',
+                height: '100%',
+                background: 'linear-gradient(90deg, #0044ff, #00ffff, #0044ff)',
+                animation: 'loadingAnimation 1.5s infinite linear'
+              }} />
+            </div>
+          </div>
+          <p style={{ 
+            marginTop: '20px',
+            fontSize: 'clamp(0.8rem, 3vw, 1rem)',
+            opacity: 0.7,
+            textAlign: 'center',
+            maxWidth: '80%'
+          }}>
+            Please wait as we prepare the universe for exploration...
+          </p>
+          <style>
+            {`
+              @keyframes loadingAnimation {
+                0% { transform: translateX(-100%); }
+                100% { transform: translateX(200%); }
+              }
+            `}
+          </style>
         </div>
+      ) : (
+        <>
+          {/* Wrap the entire app in the SciFiEventContext provider */}
+          <SciFiEventNotification isSciFiMode={isSciFiMode}>
+            <Canvas camera={{ position: cameraPosition, fov: 60 }} style={{ background: 'black' }}>
+              <ambientLight intensity={0.6} />
+              
+              {/* Enhanced lighting for sun */}
+              <pointLight position={[0, 0, 0]} intensity={2.5} distance={150} color={isSciFiMode ? "#00FFFF" : "#FDB813"} />
+              <pointLight position={[0, 0, 0]} intensity={1.5} distance={10} color="#FFFFFF" />
+              
+              {/* Additional fill light to better illuminate planets */}
+              <hemisphereLight skyColor="#FFFFFF" groundColor="#303030" intensity={0.4} />
+              
+              {/* Sci-fi background (nebulae and galaxies) */}
+              <SciFiBackground isActive={isSciFiMode} />
+              
+              {/* Regular stars background (dimmed in sci-fi mode) */}
+              <Stars radius={100} depth={50} count={5000} factor={4} saturation={isSciFiMode ? 0 : 0.5} fade={true} />
+              
+              {/* Orbit paths */}
+              {activePlanets.filter(planet => planet.orbitRadius).map((planet, index) => (
+                <OrbitPath 
+                  key={`orbit-${index}`} 
+                  radius={planet.orbitRadius} 
+                  color={isSciFiMode ? new THREE.Color(planet.color).getHex() : undefined}
+                  opacity={isSciFiMode ? 0.3 : 0.1}
+                />
+              ))}
+              
+              {/* Planets */}
+              {activePlanets.map((planet, index) => (
+                <Planet 
+                  key={`planet-${planet.name}`} 
+                  planet={planet} 
+                  speedFactor={speedFactor}
+                  isSciFiMode={isSciFiMode}
+                />
+              ))}
+              
+              {/* Wormholes (only in sci-fi mode) */}
+              {isSciFiMode && !isSpacecraftMode && wormholePositions.map((pos, index) => (
+                <Wormhole 
+                  key={`wormhole-${index}`}
+                  position={[pos.x, pos.y, pos.z]}
+                  size={pos.size}
+                  onJump={handleWormholeJump}
+                />
+              ))}
+              
+              {/* Spacecraft (only when spacecraft mode is active) */}
+              {isSciFiMode && isSpacecraftMode && (
+                <Spacecraft 
+                  position={spacecraftPosition}
+                  onEnd={handleEndSpacecraftMode}
+                />
+              )}
+              
+              {/* SciFi Event Effects (when events are active) */}
+              {isSciFiMode && <SciFiEventEffects />}
+              
+              {/* Camera controller - only active when spacecraft mode is off */}
+              {!isSpacecraftMode && (
+                <OrbitControls 
+                  enablePan={true} 
+                  enableZoom={true} 
+                  enableRotate={true}
+                  target={new THREE.Vector3(...cameraTarget)}
+                />
+              )}
+            </Canvas>
+          </SciFiEventNotification>
+          
+          {/* About Us component */}
+          <AboutUs 
+            isOpen={isAboutUsOpen} 
+            onClose={() => setIsAboutUsOpen(false)} 
+            isSciFiMode={isSciFiMode} 
+          />
+          
+          {/* Control UI elements - these should be hidden in spacecraft mode */}
+          {!isSpacecraftMode && (
+            <>
+              {/* Sci-fi mode toggle button */}
+              <div style={{
+                position: 'absolute',
+                top: '20px',
+                left: '20px',
+                backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+                padding: isSciFiMode ? '12px' : '10px',
+                borderRadius: '10px',
+                color: isSciFiMode ? '#00FFFF' : 'white',
+                fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
+                cursor: 'pointer',
+                border: isSciFiMode ? '1px solid #00FFFF' : 'none',
+                boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.5)' : 'none',
+                transition: 'all 0.3s ease',
+                fontSize: 'clamp(0.8rem, 3vw, 1.1rem)',
+                maxWidth: '45vw',
+                zIndex: 10
+              }} onClick={toggleSciFiMode} className="scifi-toggle-btn">
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  {isSciFiMode && (
+                    <div style={{ 
+                      width: '10px', 
+                      height: '10px', 
+                      borderRadius: '50%', 
+                      backgroundColor: '#00FFFF', 
+                      marginRight: '6px',
+                      boxShadow: '0 0 8px #00FFFF',
+                      animation: 'pulse 2s infinite'
+                    }} />
+                  )}
+                  <h3 style={{ margin: 0, fontSize: 'inherit', whiteSpace: 'nowrap' }}>
+                    {isSciFiMode ? "Disable Sci-Fi Mode" : "Enable Sci-Fi Mode"}
+                  </h3>
+                </div>
+                {isSciFiMode && (
+                  <style>{`
+                    @keyframes pulse {
+                      0% { opacity: 0.6; }
+                      50% { opacity: 1; }
+                      100% { opacity: 0.6; }
+                    }
+                  `}</style>
+                )}
+              </div>
+              
+              {/* Info panel */}
+              <div style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+                padding: '10px',
+                borderRadius: '10px',
+                color: isSciFiMode ? '#00FFFF' : 'white',
+                fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
+                maxWidth: 'min(300px, 40vw)',
+                border: isSciFiMode ? '1px solid #00FFFF' : 'none',
+                boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.3)' : 'none',
+                fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
+                zIndex: 10
+              }} className="info-panel">
+                <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1em', whiteSpace: 'normal' }}>{isSciFiMode ? "Galactic Explorer" : ""}</h3>
+                {!isSciFiMode && <p style={{ margin: '0 0 5px 0', fontSize: '0.9em', whiteSpace: 'normal' }}></p>}
+                {isSciFiMode && (
+                  <p style={{ margin: '5px 0', color: '#FF00FF', fontSize: '0.9em', whiteSpace: 'normal' }}>Click wormholes to travel in a spacecraft!</p>
+                )}
+              </div>
+              
+              <style>{`
+                @media screen and (max-width: 768px) {
+                  .info-panel {
+                    padding: 8px !important;
+                    font-size: clamp(0.6rem, 2vw, 0.9rem) !important;
+                  }
+                  body.scifi-active .info-panel {
+                    right: auto !important;
+                    left: 20px !important;
+                    top: 75px !important;
+                    max-width: min(250px, 45vw) !important;
+                  }
+                  .scifi-toggle-btn {
+                    padding: 10px !important;
+                    font-size: clamp(0.9rem, 3.5vw, 1.2rem) !important;
+                    min-width: 120px !important;
+                  }
+                }
+                
+                @media screen and (max-width: 480px) {
+                  .info-panel {
+                    padding: 6px !important;
+                    max-width: 45vw !important;
+                    font-size: clamp(0.5rem, 1.8vw, 0.8rem) !important;
+                  }
+                  .info-panel h3 {
+                    margin: 0 0 4px 0 !important;
+                    font-size: 1em !important;
+                  }
+                  .scifi-toggle-btn {
+                    padding: 10px !important;
+                    font-size: clamp(0.7rem, 3.2vw, 1rem) !important;
+                    min-width: 100px !important;
+                  }
+                  body.scifi-active .info-panel {
+                    top: 65px !important;
+                  }
+                }
+              `}</style>
+              
+              {/* About Us button - bottom left corner */}
+              <div style={{
+                position: 'absolute',
+                bottom: '40px', 
+                left: '20px',
+                backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+                padding: isSciFiMode ? '10px 15px' : '8px 12px',
+                borderRadius: '10px',
+                color: isSciFiMode ? '#00FFFF' : 'white',
+                fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
+                cursor: 'pointer',
+                border: isSciFiMode ? '1px solid #00FFFF' : 'none',
+                boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.4)' : 'none',
+                transition: 'all 0.3s ease',
+                fontSize: 'clamp(0.7rem, 2.8vw, 0.9rem)',
+                zIndex: 10
+              }} onClick={() => {
+                console.log("About Us button clicked, current state:", isAboutUsOpen);
+                setIsAboutUsOpen(true);
+                console.log("About Us state after click:", !isAboutUsOpen);
+              }} className="about-us-btn">
+                <h3 style={{ margin: 0, fontSize: 'inherit', whiteSpace: 'nowrap' }}>
+                  {isSciFiMode ? "ABOUT" : "About"}
+                </h3>
+              </div>
+              
+              {/* Speed control slider */}
+              <div style={{
+                position: 'absolute', 
+                bottom: '28px', 
+                left: '50%', 
+                transform: 'translateX(-50%)', 
+                width: 'min(220px, 80vw)', 
+                backgroundColor: 'rgba(0, 0, 0, 0.4)', 
+                padding: '5px', 
+                borderRadius: '6px', 
+                display: 'flex', 
+                flexDirection: 'column', 
+                alignItems: 'center', 
+                color: 'white', 
+                fontFamily: 'Arial, sans-serif', 
+                border: 'none', 
+                boxShadow: 'none', 
+                fontSize: 'clamp(0.5rem, 2vw, 0.8rem)'
+              }} data-component-name="App">
+                <h3 style={{ margin: '0px 0px 2px', fontSize: '0.8em', color: 'rgba(255, 255, 255, 0.7)' }}>Speed: {speedFactor.toFixed(1)}x</h3>
+                <input 
+                  type="range" 
+                  min="0.5" 
+                  max="50" 
+                  step="0.1" 
+                  value={speedFactor} 
+                  onChange={handleSpeedChange} 
+                  style={{ 
+                    width: '80%', 
+                    height: '12px',
+                    cursor: 'pointer'
+                  }} 
+                  data-component-name="App" 
+                />
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  width: '80%', 
+                  marginTop: '1px', 
+                  fontSize: '0.6em' 
+                }} data-component-name="App">
+                  <span>0.5x</span>
+                  <span data-component-name="App">50x</span>
+                </div>
+              </div>
+            </>
+          )}
+          
+          {/* Exit spacecraft button */}
+          {isSpacecraftMode && (
+            <div style={{
+              position: 'absolute',
+              bottom: '40px', 
+              left: '50%',
+              transform: 'translateX(-50%)',
+              backgroundColor: 'rgba(0, 40, 80, 0.8)',
+              padding: '15px',
+              borderRadius: '10px',
+              color: '#00FFFF',
+              fontFamily: 'monospace',
+              textAlign: 'center',
+              border: '1px solid #00FFFF',
+              boxShadow: '0 0 15px rgba(0, 255, 255, 0.5)',
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              zIndex: 1000
+            }} onClick={handleEndSpacecraftMode}>
+              EXIT SPACECRAFT
+            </div>
+          )}
+        </>
       )}
     </div>
   );
