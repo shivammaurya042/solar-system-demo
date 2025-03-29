@@ -335,7 +335,10 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
                 padding: 8px 15px !important;
                 font-size: 14px !important;
                 top: 40px !important;
-                max-width: 90% !important;
+                left: auto !important;
+                right: 10px !important;
+                transform: none !important;
+                max-width: 45% !important;
                 letter-spacing: 0.5px !important;
                 box-shadow: 0 0 10px #00FFFF !important;
               }
@@ -349,11 +352,13 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
               .sci-fi-notification {
                 padding: 6px 10px !important;
                 font-size: 12px !important;
-                top: 30px !important;
-                max-width: 95% !important;
+                top: 20px !important;
+                right: 5px !important;
+                max-width: 45% !important;
                 letter-spacing: 0 !important;
                 border-width: 1px !important;
                 box-shadow: 0 0 5px #00FFFF !important;
+                text-align: left !important;
               }
               .sci-fi-notification span {
                 margin-right: 4px !important;

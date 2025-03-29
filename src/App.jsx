@@ -90,6 +90,20 @@ export default function App() {
     };
   }, []);
   
+  // Toggle body class for SciFi mode to help with CSS targeting
+  useEffect(() => {
+    if (isSciFiMode) {
+      document.body.classList.add('scifi-active');
+    } else {
+      document.body.classList.remove('scifi-active');
+    }
+    
+    // Clean up on component unmount
+    return () => {
+      document.body.classList.remove('scifi-active');
+    };
+  }, [isSciFiMode]);
+  
   // Handle wormhole jump - start spacecraft travel mode
   const handleWormholeJump = useCallback((position) => {
     // Store current camera position before switching to spacecraft mode
@@ -334,6 +348,59 @@ export default function App() {
             )}
           </div>
           
+          {/* Info panel */}
+          <div style={{
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+            padding: '10px',
+            borderRadius: '10px',
+            color: isSciFiMode ? '#00FFFF' : 'white',
+            fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
+            maxWidth: 'min(300px, 40vw)',
+            border: isSciFiMode ? '1px solid #00FFFF' : 'none',
+            boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.3)' : 'none',
+            fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
+            zIndex: 10
+          }} className="info-panel">
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1em', whiteSpace: 'normal' }}>{isSciFiMode ? "Galactic Explorer" : "Solar System Simulation"}</h3>
+            {!isSciFiMode && <p style={{ margin: '0 0 5px 0', fontSize: '0.9em', whiteSpace: 'normal' }}>Use mouse to rotate, zoom and pan</p>}
+            {isSciFiMode && (
+              <p style={{ margin: '5px 0', color: '#FF00FF', fontSize: '0.9em', whiteSpace: 'normal' }}>Click wormholes to travel in a spacecraft!</p>
+            )}
+          </div>
+          
+          <style>{`
+            @media screen and (max-width: 768px) {
+              .info-panel {
+                padding: 8px !important;
+                font-size: clamp(0.6rem, 2vw, 0.9rem) !important;
+              }
+              body.scifi-active .info-panel {
+                right: auto !important;
+                left: 20px !important;
+                top: 75px !important;
+                max-width: min(250px, 45vw) !important;
+              }
+            }
+            
+            @media screen and (max-width: 480px) {
+              .info-panel {
+                padding: 6px !important;
+                max-width: 45vw !important;
+                font-size: clamp(0.5rem, 1.8vw, 0.8rem) !important;
+              }
+              .info-panel h3 {
+                margin: 0 0 4px 0 !important;
+                font-size: 1em !important;
+              }
+              body.scifi-active .info-panel {
+                top: 65px !important;
+              }
+            }
+          `}</style>
+          
           {/* Speed control slider */}
           <div style={{
             position: 'absolute', 
@@ -378,29 +445,6 @@ export default function App() {
               <span>0.5x</span>
               <span data-component-name="App">50x</span>
             </div>
-          </div>
-          
-          {/* Info panel */}
-          <div style={{
-            position: 'absolute',
-            top: '20px',
-            right: '20px',
-            backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-            padding: '10px',
-            borderRadius: '10px',
-            color: isSciFiMode ? '#00FFFF' : 'white',
-            fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
-            maxWidth: 'min(300px, 40vw)',
-            border: isSciFiMode ? '1px solid #00FFFF' : 'none',
-            boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.3)' : 'none',
-            fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
-            zIndex: 10
-          }}>
-            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1em', whiteSpace: 'normal' }}>{isSciFiMode ? "Galactic Explorer" : "Solar System Simulation"}</h3>
-            {!isSciFiMode && <p style={{ margin: '0 0 5px 0', fontSize: '0.9em', whiteSpace: 'normal' }}>Use mouse to rotate, zoom and pan</p>}
-            {isSciFiMode && (
-              <p style={{ margin: '5px 0', color: '#FF00FF', fontSize: '0.9em', whiteSpace: 'normal' }}>Click wormholes to travel in a spacecraft!</p>
-            )}
           </div>
         </>
       )}
