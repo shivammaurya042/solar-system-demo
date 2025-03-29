@@ -462,7 +462,7 @@ export default function App() {
         </>
       )}
       
-      {/* Spacecraft mode controls info */}
+      {/* Exit spacecraft button */}
       {isSpacecraftMode && (
         <div style={{
           position: 'absolute',
@@ -477,22 +477,11 @@ export default function App() {
           textAlign: 'center',
           border: '1px solid #00FFFF',
           boxShadow: '0 0 15px rgba(0, 255, 255, 0.5)',
-          maxWidth: 'min(400px, 80vw)',
-          fontSize: 'clamp(0.7rem, 2.5vw, 1rem)'
-        }}>
-          <h3 style={{ margin: '0 0 10px 0' }}>Spacecraft Control Mode</h3>
-          <p>Use arrow keys to navigate</p>
-          <p>Returning to normal mode in <span id="countdown">20</span> seconds</p>
-          <script dangerouslySetInnerHTML={{
-            __html: `
-              let count = 20;
-              const interval = setInterval(() => {
-                count--;
-                document.getElementById('countdown').textContent = count;
-                if (count <= 0) clearInterval(interval);
-              }, 1000);
-            `
-          }} />
+          fontSize: '0.9rem',
+          cursor: 'pointer',
+          zIndex: 1000
+        }} onClick={handleEndSpacecraftMode}>
+          EXIT SPACECRAFT
         </div>
       )}
     </div>

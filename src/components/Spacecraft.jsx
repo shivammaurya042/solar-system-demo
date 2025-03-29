@@ -116,16 +116,16 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
         case 'ArrowUp':
         case 'w':
         case 'W':
-          // Apply vertical steering force for up movement
-          steeringForceRef.current.y = -steeringIntensity;
+          // Apply vertical steering force for up movement (positive = up)
+          steeringForceRef.current.y = steeringIntensity;
           // Boost flames when accelerating up
           setFlameIntensity(prev => Math.min(prev + 0.5, 3));
           break;
         case 'ArrowDown':
         case 's':
         case 'S':
-          // Apply vertical steering force for down movement
-          steeringForceRef.current.y = steeringIntensity;
+          // Apply vertical steering force for down movement (negative = down)
+          steeringForceRef.current.y = -steeringIntensity;
           break;
         case 'ArrowLeft':
         case 'a':
@@ -215,7 +215,8 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
         // Vertical swipe controls up/down steering - more sensitive
         if (Math.abs(deltaY) > 1) {
           const normalizedDeltaY = deltaY / window.innerHeight * 15;
-          steeringForceRef.current.y = -normalizedDeltaY * steeringIntensity;
+          // Invert the sign to match keyboard controls (swiping up = up movement)
+          steeringForceRef.current.y = normalizedDeltaY * steeringIntensity;
           
           if (deltaY < -3) { 
             setFlameIntensity(prev => Math.min(prev + 0.3, 3)); 
