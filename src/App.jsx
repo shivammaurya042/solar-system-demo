@@ -18,7 +18,7 @@ import { sciFiPlanets } from './data/sciFiPlanetData';
 
 // Main App component
 export default function App() {
-  const [speedFactor, setSpeedFactor] = useState(3);
+  const [speedFactor, setSpeedFactor] = useState(4);
   const [isSciFiMode, setIsSciFiMode] = useState(false);
   const [cameraPosition, setCameraPosition] = useState([0, 20, 40]);
   const [cameraTarget, setCameraTarget] = useState([0, 0, 0]);

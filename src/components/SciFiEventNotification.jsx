@@ -202,7 +202,7 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
         //   triggerRandomEvent();
         // }
         triggerRandomEvent();
-      }, 15000); // Check every 15 seconds
+      }, 20000); // Check every 20 seconds 
       
       return () => {
         clearTimeout(initialDelay);
@@ -254,13 +254,8 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
     // Don't trigger new event if one is already active
     if (activeEvent) return;
     
-    // Prioritize mars_curiosity_mission with 80% chance, otherwise choose random event
-    const marsMission = possibleEvents.find(e => e.id === 'mars_curiosity_mission');
-    
-    // Use the Mars mission with 20% probability, or a random event with 20% probability
-    const randomEvent = Math.random() < 0.2 && marsMission ? 
-      marsMission : 
-      possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
+    // Choose a random event with equal probability for all events
+    const randomEvent = possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
       
     console.log("Triggering sci-fi event:", randomEvent);
     setNotification(randomEvent);
