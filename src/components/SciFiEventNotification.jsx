@@ -277,7 +277,7 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
     position: 'absolute',
     top: '60px',
     left: '50%',
-    transform: 'translateX(-50%)',
+    // transform: 'translateX(-50%)',
     backgroundColor: 'rgba(10, 10, 40, 0.8)',
     color: '#00FFFF',
     padding: '15px 25px',
@@ -329,11 +329,11 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
               .sci-fi-notification {
                 padding: 8px 15px !important;
                 font-size: 14px !important;
-                top: 40px !important;
-                left: auto !important;
-                right: 10px !important;
-                transform: none !important;
-                max-width: 45% !important;
+                top: 75px !important;
+                left: 50% !important;
+                right: auto !important;
+                transform: translateX(-50%) !important;
+                max-width: 80% !important;
                 letter-spacing: 0.5px !important;
                 box-shadow: 0 0 10px #00FFFF !important;
               }
@@ -347,9 +347,11 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
               .sci-fi-notification {
                 padding: 6px 10px !important;
                 font-size: 12px !important;
-                top: 20px !important;
-                right: 5px !important;
-                max-width: 45% !important;
+                top: 65px !important;
+                left: 50% !important;
+                right: auto !important;
+                transform: translateX(-50%) !important;
+                max-width: 80% !important;
                 letter-spacing: 0 !important;
                 border-width: 1px !important;
                 box-shadow: 0 0 5px #00FFFF !important;

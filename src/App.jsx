@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Stars } from '@react-three/drei';
 import * as THREE from 'three';
+import { Analytics } from '@vercel/analytics/react';
 
 // Import components
 import Planet from './components/Planet';
@@ -496,9 +497,9 @@ export default function App() {
                     font-size: clamp(0.6rem, 2vw, 0.9rem) !important;
                   }
                   body.scifi-active .info-panel {
-                    right: auto !important;
-                    left: 20px !important;
-                    top: 75px !important;
+                    right: 20px !important;
+                    left: auto !important;
+                    top: 20px !important;
                     max-width: min(250px, 45vw) !important;
                   }
                   .scifi-toggle-btn {
@@ -519,12 +520,13 @@ export default function App() {
                     font-size: 1em !important;
                   }
                   .scifi-toggle-btn {
-                    padding: 10px !important;
+                    padding: 7px !important;
                     font-size: clamp(0.7rem, 3.2vw, 1rem) !important;
-                    min-width: 100px !important;
+                    min-width: 80px !important;
                   }
                   body.scifi-active .info-panel {
-                    top: 65px !important;
+                    top: 20px !important;
+                    right: 10px !important;
                   }
                 }
               `}</style>
@@ -574,7 +576,13 @@ export default function App() {
                 boxShadow: 'none', 
                 fontSize: 'clamp(0.5rem, 2vw, 0.8rem)'
               }} data-component-name="App">
-                <h3 style={{ margin: '0px 0px 2px', fontSize: '0.8em', color: 'rgba(255, 255, 255, 0.7)' }}>Speed: {speedFactor.toFixed(1)}x</h3>
+                <h3 style={{ 
+                  margin: '0px 0px 2px', 
+                  fontSize: '0.8em', 
+                  color: 'rgba(255, 255, 255, 0.7)'
+                }}>
+                  Speed: {speedFactor.toFixed(1)}x
+                </h3>
                 <input 
                   type="range" 
                   min="0.5" 
@@ -627,6 +635,7 @@ export default function App() {
           )}
         </>
       )}
+     <Analytics />
     </div>
   );
 }
