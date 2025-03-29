@@ -11,6 +11,7 @@ import Spacecraft from './components/Spacecraft';
 import SciFiEventNotification from './components/SciFiEventNotification';
 import SciFiEventEffects from './components/SciFiEventEffects';
 import SciFiBackground from './components/SciFiBackground';
+import AboutUs from './components/AboutUs';
 
 // Import data
 import { planets } from './data/planetData';
@@ -25,6 +26,7 @@ export default function App() {
   const [isSpacecraftMode, setIsSpacecraftMode] = useState(false);
   const [spacecraftPosition, setSpacecraftPosition] = useState([0, 0, 0]);
   const [randomSeed, setRandomSeed] = useState(Math.random());
+  const [isAboutUsOpen, setIsAboutUsOpen] = useState(false);
   const audioRef = useRef(null);
   
   // Use either standard or sci-fi planet data based on the mode
@@ -332,6 +334,13 @@ export default function App() {
         </Canvas>
       </SciFiEventNotification>
       
+      {/* About Us component */}
+      <AboutUs 
+        isOpen={isAboutUsOpen} 
+        onClose={() => setIsAboutUsOpen(false)} 
+        isSciFiMode={isSciFiMode} 
+      />
+      
       {/* Control UI elements - these should be hidden in spacecraft mode */}
       {!isSpacecraftMode && (
         <>
@@ -442,6 +451,32 @@ export default function App() {
               }
             }
           `}</style>
+          
+          {/* About Us button - bottom left corner */}
+          <div style={{
+            position: 'absolute',
+            bottom: '20px',
+            left: '20px',
+            backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+            padding: isSciFiMode ? '10px 15px' : '8px 12px',
+            borderRadius: '10px',
+            color: isSciFiMode ? '#00FFFF' : 'white',
+            fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
+            cursor: 'pointer',
+            border: isSciFiMode ? '1px solid #00FFFF' : 'none',
+            boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.4)' : 'none',
+            transition: 'all 0.3s ease',
+            fontSize: 'clamp(0.7rem, 2.8vw, 0.9rem)',
+            zIndex: 10
+          }} onClick={() => {
+            console.log("About Us button clicked, current state:", isAboutUsOpen);
+            setIsAboutUsOpen(true);
+            console.log("About Us state after click:", !isAboutUsOpen);
+          }} className="about-us-btn">
+            <h3 style={{ margin: 0, fontSize: 'inherit', whiteSpace: 'nowrap' }}>
+              {isSciFiMode ? "ABOUT" : "About"}
+            </h3>
+          </div>
           
           {/* Speed control slider */}
           <div style={{
