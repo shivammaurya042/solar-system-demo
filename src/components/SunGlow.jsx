@@ -31,7 +31,7 @@ const SunGlow = ({ size, intensity, color }) => {
     <>
       {/* Inner glow layer */}
       <mesh ref={innerGlowRef}>
-        <sphereGeometry args={[size * 1.1, 32, 16]} />
+        <sphereGeometry args={[size * 1.1, 64, 64]} />
         <meshBasicMaterial 
           color={color} 
           transparent={true} 
@@ -42,7 +42,7 @@ const SunGlow = ({ size, intensity, color }) => {
       
       {/* Outer glow layer */}
       <mesh ref={outerGlowRef}>
-        <sphereGeometry args={[size * 1.5, 32, 16]} />
+        <sphereGeometry args={[size * 1.5, 64, 64]} />
         <meshBasicMaterial 
           color={new THREE.Color(color).offsetHSL(0.05, 0, 0.1).getStyle()} 
           transparent={true} 

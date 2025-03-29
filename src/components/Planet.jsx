@@ -34,8 +34,11 @@ const Planet = ({ planet, speedFactor, isSciFiMode = false }) => {
       if (name === 'Sun') {
         texture.encoding = THREE.sRGBEncoding;
         texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-        texture.repeat.set(2, 2); // Repeat the texture for more detail
+        texture.repeat.set(1, 1); // Changed from 2,2 to 1,1 for better mapping
         texture.anisotropy = 16; // Improve texture quality
+        texture.offset.set(0, 0); // Reset any offset
+        texture.center.set(0.5, 0.5); // Set center point for texture rotation
+        texture.rotation = Math.PI; // Rotate texture to fix the rendering issue
       } else {
         texture.encoding = THREE.sRGBEncoding;
         texture.flipY = false;
