@@ -295,28 +295,31 @@ export default function App() {
             top: '20px',
             left: '20px',
             backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-            padding: '15px',
+            padding: isSciFiMode ? '12px' : '10px',
             borderRadius: '10px',
             color: isSciFiMode ? '#00FFFF' : 'white',
             fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
             cursor: 'pointer',
             border: isSciFiMode ? '1px solid #00FFFF' : 'none',
             boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.5)' : 'none',
-            transition: 'all 0.3s ease'
+            transition: 'all 0.3s ease',
+            fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
+            maxWidth: '40vw',
+            zIndex: 10
           }} onClick={toggleSciFiMode}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
               {isSciFiMode && (
                 <div style={{ 
-                  width: '12px', 
-                  height: '12px', 
+                  width: '10px', 
+                  height: '10px', 
                   borderRadius: '50%', 
                   backgroundColor: '#00FFFF', 
-                  marginRight: '10px',
+                  marginRight: '6px',
                   boxShadow: '0 0 8px #00FFFF',
                   animation: 'pulse 2s infinite'
                 }} />
               )}
-              <h3 style={{ margin: 0 }}>
+              <h3 style={{ margin: 0, fontSize: 'inherit', whiteSpace: 'nowrap' }}>
                 {isSciFiMode ? "Disable Sci-Fi Mode" : "Enable Sci-Fi Mode"}
               </h3>
             </div>
@@ -333,39 +336,47 @@ export default function App() {
           
           {/* Speed control slider */}
           <div style={{
-            position: 'absolute',
-            bottom: '20px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '300px',
-            backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-            padding: '10px',
-            borderRadius: '10px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            color: isSciFiMode ? '#00FFFF' : 'white',
-            fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
-            border: isSciFiMode ? '1px solid #00FFFF' : 'none',
-            boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.3)' : 'none',
-          }}>
-            <h3 style={{ margin: '0 0 5px 0', fontSize: '14px' }}>Speed: {speedFactor.toFixed(1)}x</h3>
-            <input
-              type="range"
-              min="0.5"
-              max="50"
-              step="0.1"
-              value={speedFactor}
-              onChange={handleSpeedChange}
+            position: 'absolute', 
+            bottom: '5px', 
+            left: '50%', 
+            transform: 'translateX(-50%)', 
+            width: 'min(220px, 80vw)', 
+            backgroundColor: 'rgba(0, 0, 0, 0.4)', 
+            padding: '5px', 
+            borderRadius: '6px', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            alignItems: 'center', 
+            color: 'white', 
+            fontFamily: 'Arial, sans-serif', 
+            border: 'none', 
+            boxShadow: 'none', 
+            fontSize: 'clamp(0.5rem, 2vw, 0.8rem)'
+          }} data-component-name="App">
+            <h3 style={{ margin: '0px 0px 2px', fontSize: '0.8em', color: 'rgba(255, 255, 255, 0.7)' }}>Speed: {speedFactor.toFixed(1)}x</h3>
+            <input 
+              type="range" 
+              min="0.5" 
+              max="50" 
+              step="0.1" 
+              value={speedFactor} 
+              onChange={handleSpeedChange} 
               style={{ 
-                width: '90%', 
-                cursor: 'pointer',
-                accentColor: isSciFiMode ? '#00FFFF' : undefined
-              }}
+                width: '80%', 
+                height: '12px',
+                cursor: 'pointer'
+              }} 
+              data-component-name="App" 
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', width: '90%', marginTop: '2px', fontSize: '12px' }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              width: '80%', 
+              marginTop: '1px', 
+              fontSize: '0.6em' 
+            }} data-component-name="App">
               <span>0.5x</span>
-              <span>50x</span>
+              <span data-component-name="App">50x</span>
             </div>
           </div>
           
@@ -375,18 +386,20 @@ export default function App() {
             top: '20px',
             right: '20px',
             backgroundColor: isSciFiMode ? 'rgba(0, 40, 80, 0.8)' : 'rgba(0, 0, 0, 0.7)',
-            padding: '15px',
+            padding: '10px',
             borderRadius: '10px',
             color: isSciFiMode ? '#00FFFF' : 'white',
             fontFamily: isSciFiMode ? 'monospace' : 'Arial, sans-serif',
-            maxWidth: '300px',
+            maxWidth: 'min(300px, 40vw)',
             border: isSciFiMode ? '1px solid #00FFFF' : 'none',
             boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.3)' : 'none',
+            fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
+            zIndex: 10
           }}>
-            <h3 style={{ margin: '0 0 10px 0' }}>{isSciFiMode ? "Galactic Explorer" : "Solar System Demo"}</h3>
-            <p style={{ margin: '0 0 5px 0' }}>Use mouse to rotate, zoom and pan</p>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1em', whiteSpace: 'normal' }}>{isSciFiMode ? "Galactic Explorer" : "Solar System Simulation"}</h3>
+            {!isSciFiMode && <p style={{ margin: '0 0 5px 0', fontSize: '0.9em', whiteSpace: 'normal' }}>Use mouse to rotate, zoom and pan</p>}
             {isSciFiMode && (
-              <p style={{ margin: '5px 0', color: '#FF00FF' }}>Click wormholes to travel in a spacecraft!</p>
+              <p style={{ margin: '5px 0', color: '#FF00FF', fontSize: '0.9em', whiteSpace: 'normal' }}>Click wormholes to travel in a spacecraft!</p>
             )}
           </div>
         </>
@@ -407,6 +420,8 @@ export default function App() {
           textAlign: 'center',
           border: '1px solid #00FFFF',
           boxShadow: '0 0 15px rgba(0, 255, 255, 0.5)',
+          maxWidth: 'min(400px, 80vw)',
+          fontSize: 'clamp(0.7rem, 2.5vw, 1rem)'
         }}>
           <h3 style={{ margin: '0 0 10px 0' }}>Spacecraft Control Mode</h3>
           <p>Use arrow keys to navigate</p>

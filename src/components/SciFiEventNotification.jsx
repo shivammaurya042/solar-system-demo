@@ -321,13 +321,44 @@ const SciFiEventNotification = ({ isSciFiMode, children }) => {
   return (
     <SciFiEventContext.Provider value={contextValue}>
       {notification && (
-        <div style={notificationStyle}>
+        <div style={notificationStyle} className="sci-fi-notification">
           <span style={indicatorStyle}>[NEW]</span> {notification.text}
           <style>{`
             @keyframes blink {
               0% { opacity: 0.2; }
               50% { opacity: 1; }
               100% { opacity: 0.2; }
+            }
+            
+            @media screen and (max-width: 768px) {
+              .sci-fi-notification {
+                padding: 8px 15px !important;
+                font-size: 14px !important;
+                top: 40px !important;
+                max-width: 90% !important;
+                letter-spacing: 0.5px !important;
+                box-shadow: 0 0 10px #00FFFF !important;
+              }
+              .sci-fi-notification span {
+                margin-right: 6px !important;
+                font-size: 12px !important;
+              }
+            }
+            
+            @media screen and (max-width: 480px) {
+              .sci-fi-notification {
+                padding: 6px 10px !important;
+                font-size: 12px !important;
+                top: 30px !important;
+                max-width: 95% !important;
+                letter-spacing: 0 !important;
+                border-width: 1px !important;
+                box-shadow: 0 0 5px #00FFFF !important;
+              }
+              .sci-fi-notification span {
+                margin-right: 4px !important;
+                font-size: 10px !important;
+              }
             }
           `}</style>
         </div>
