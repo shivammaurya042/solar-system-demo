@@ -93,7 +93,7 @@ const AboutUs = ({ isOpen, onClose, isSciFiMode }) => {
     <div style={modalStyle} onClick={onClose}>
       <div style={contentStyle} onClick={(e) => e.stopPropagation()}>
         <button style={closeButtonStyle} onClick={onClose}>×</button>
-        <h2 style={titleStyle}>GALACTIC EXPLORER</h2>
+        <h2 style={titleStyle}>SOLAR SYSTEM EXPLORER</h2>
         
         <p style={paragraphStyle}>
           Welcome to <span style={highlightStyle}>Solar System Explorer</span> project! 
