@@ -46,7 +46,7 @@ const SunGlow = ({ size, intensity, color }) => {
         <meshBasicMaterial 
           color={new THREE.Color(color).offsetHSL(0.05, 0, 0.1).getStyle()} 
           transparent={true} 
-          opacity={intensity * 0.15} // Reduced from 0.3
+          opacity={intensity * 0.15}
           side={THREE.BackSide}
         />
       </mesh>
