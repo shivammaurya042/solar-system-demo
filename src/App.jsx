@@ -481,7 +481,8 @@ export default function App() {
                 border: isSciFiMode ? '1px solid #00FFFF' : 'none',
                 boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.3)' : 'none',
                 fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
-                zIndex: 10
+                zIndex: 10,
+                textAlign: 'center'
               }} className="info-panel">
                 <h3 style={{ margin: '0 0 8px 0', fontSize: '1.1em', whiteSpace: 'normal' }}>{isSciFiMode ? "Galactic Explorer" : ""}</h3>
                 {!isSciFiMode && <p style={{ margin: '0 0 5px 0', fontSize: '0.9em', whiteSpace: 'normal' }}></p>}
@@ -494,12 +495,13 @@ export default function App() {
                 @media screen and (max-width: 768px) {
                   .info-panel {
                     padding: 8px !important;
-                    font-size: clamp(0.6rem, 2vw, 0.9rem) !important;
+                    font-size: clamp(0.8rem, 2.5vw, 1.1rem) !important;
+                    text-align: center !important;
                   }
                   body.scifi-active .info-panel {
                     right: 20px !important;
                     left: auto !important;
-                    top: 20px !important;
+                    top: 75px !important;
                     max-width: min(250px, 45vw) !important;
                   }
                   .scifi-toggle-btn {
@@ -511,21 +513,22 @@ export default function App() {
                 
                 @media screen and (max-width: 480px) {
                   .info-panel {
-                    padding: 6px !important;
+                    padding: 8px !important;
                     max-width: 45vw !important;
-                    font-size: clamp(0.5rem, 1.8vw, 0.8rem) !important;
+                    font-size: clamp(0.75rem, 2.2vw, 1rem) !important;
+                    text-align: center !important;
                   }
                   .info-panel h3 {
                     margin: 0 0 4px 0 !important;
-                    font-size: 1em !important;
+                    font-size: 1.1em !important;
                   }
                   .scifi-toggle-btn {
                     padding: 7px !important;
-                    font-size: clamp(0.7rem, 3.2vw, 1rem) !important;
+                    font-size: clamp(0.8rem, 3.2vw, 1.1rem) !important;
                     min-width: 80px !important;
                   }
                   body.scifi-active .info-panel {
-                    top: 20px !important;
+                    top: 75px !important;
                     right: 10px !important;
                   }
                 }
