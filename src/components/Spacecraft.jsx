@@ -14,6 +14,12 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
   const [atBoundary, setAtBoundary] = useState(false);
   const [flameIntensity, setFlameIntensity] = useState(1);
   const [lightningVisible, setLightningVisible] = useState(false);
+  
+  // Touch control refs
+  const touchStartRef = useRef({ x: 0, y: 0 });
+  const touchActiveRef = useRef(false);
+  const lastTouchMoveRef = useRef({ x: 0, y: 0 });
+  const isMobileRef = useRef(false);
 
   // Overall spacecraft scale (reduced to make it smaller relative to planets)
   const SPACECRAFT_SCALE = 0.35; // Reduced from implicit 1.0
@@ -26,6 +32,17 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
   const STEERING_RESPONSIVENESS = 0.25; // Increased from 0.25 for more instant response
   // Rotation responsiveness for spacecraft turning
   const ROTATION_RESPONSIVENESS = 0.35; // Increased from 0.15 for instant visual feedback
+
+  // Detect if device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+      const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
+      isMobileRef.current = isMobile;
+    };
+    
+    checkMobile();
+  }, []);
 
   // Initialize position when component mounts
   useEffect(() => {
@@ -129,12 +146,77 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
       }
     };
 
+    // Touch controls for mobile
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        touchStartRef.current = { x: touch.clientX, y: touch.clientY };
+        lastTouchMoveRef.current = { x: touch.clientX, y: touch.clientY };
+        touchActiveRef.current = true;
+        
+        // Start with a small forward velocity
+        if (targetVelocityRef.current.z < 0.05) {
+          targetVelocityRef.current.z = 0.05;
+        }
+      }
+    };
+    
+    const handleTouchMove = (e) => {
+      if (touchActiveRef.current && e.touches.length === 1) {
+        const touch = e.touches[0];
+        const currentX = touch.clientX;
+        const currentY = touch.clientY;
+        
+        // Calculate the swipe distance
+        const deltaX = currentX - lastTouchMoveRef.current.x;
+        const deltaY = currentY - lastTouchMoveRef.current.y;
+        
+        // Update the last touch position
+        lastTouchMoveRef.current = { x: currentX, y: currentY };
+        
+        const forwardSpeed = Math.abs(velocityRef.current.z);
+        const steeringIntensity = 0.15 + (forwardSpeed * 1.5);
+        
+        // Horizontal swipe controls steering - more sensitive
+        if (Math.abs(deltaX) > 1) {
+          const normalizedDeltaX = deltaX / window.innerWidth * 15;
+          steeringForceRef.current.x = -normalizedDeltaX * steeringIntensity;
+        }
+        
+        // Vertical swipe controls up/down movement - more sensitive
+        if (Math.abs(deltaY) > 1) {
+          const verticalSpeed = 0.015;
+          targetVelocityRef.current.y = -deltaY * verticalSpeed;
+          
+          if (deltaY < -3) { 
+            setFlameIntensity(prev => Math.min(prev + 0.3, 3)); 
+          } else if (deltaY > 3) { 
+            setFlameIntensity(prev => Math.max(prev - 0.2, 1)); 
+          }
+        } else {
+          targetVelocityRef.current.y *= 0.85; 
+        }
+        
+        targetVelocityRef.current.z = 0.1; 
+      }
+    };
+    
+    const handleTouchEnd = () => {
+      touchActiveRef.current = false;
+      steeringForceRef.current.x = 0;
+      targetVelocityRef.current.y = 0;
+    };
+
+    // Add event listeners
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('touchstart', handleTouchStart, { passive: false });
+    window.addEventListener('touchmove', handleTouchMove, { passive: false });
+    window.addEventListener('touchend', handleTouchEnd);
 
     // Add a small initial forward velocity after a short delay for better control
     const forwardTimer = setTimeout(() => {
-      targetVelocityRef.current.z = 0.08; // Reduced from 0.15 for slower initial movement
+      targetVelocityRef.current.z = 0.08; 
     }, 1000);
 
     // Clean up on unmount
@@ -143,6 +225,9 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
       clearTimeout(forwardTimer);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('touchstart', handleTouchStart);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [onEnd]);
 
@@ -169,12 +254,10 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
       // Apply increasing resistance as spacecraft approaches boundary
       let boundaryFactor = 1;
       if (isNearBoundary) {
-        // Gradually increase resistance near edge
         boundaryFactor = Math.max(0.2, 1 - (boundaryProximity - 0.8) * 5);
 
         // Apply forced velocity toward center if at extreme boundary
         if (boundaryProximity > 0.95) {
-          // Calculate direction vector toward center
           const toCenter = new THREE.Vector3(0, 0, 0).sub(
             new THREE.Vector3(
               spacecraftRef.current.position.x,
@@ -183,61 +266,44 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
             )
           ).normalize().multiplyScalar(0.02 * (boundaryProximity - 0.95) * 20);
 
-          // Add center-directed velocity
           velocityRef.current.add(toCenter);
         }
       }
 
       // Apply steering to heading direction
-      // Steering is more effective at higher speeds
       const forwardSpeed = Math.abs(velocityRef.current.z);
-      const steeringStrength = STEERING_RESPONSIVENESS + (forwardSpeed * 1.5); // Increased multiplier for more responsive steering
+      const steeringStrength = STEERING_RESPONSIVENESS + (forwardSpeed * 1.5); 
       
-      // Create a rotation matrix based on steering input
       const steeringMatrix = new THREE.Matrix4().makeRotationY(steeringForceRef.current.x * steeringStrength);
       
-      // Apply rotation to the heading vector
       headingRef.current.applyMatrix4(steeringMatrix);
       headingRef.current.normalize(); // Keep as unit vector
       
-      // No steering decay - maintain full steering input until key is released
-      // steeringForceRef.current.multiplyScalar(0.5); // Removed decay for instant response
-
-      // More responsive velocity changes with boundary factor
-      const acceleration = 0.04 * boundaryFactor; // Reduced from 0.08 for slower acceleration
+      const acceleration = 0.04 * boundaryFactor; 
       
-      // Apply forward thrust in the heading direction
       const targetForwardVelocity = headingRef.current.clone().multiplyScalar(targetVelocityRef.current.z);
       
-      // Keep vertical control separate (up/down movement)
       const targetVerticalVelocity = new THREE.Vector3(0, targetVelocityRef.current.y, 0);
       
-      // Calculate combined target velocity
       const combinedTargetVelocity = targetForwardVelocity.add(targetVerticalVelocity);
       
-      // Smoothly transition current velocity toward target (faster lerp)
       velocityRef.current.lerp(combinedTargetVelocity, acceleration);
 
-      // Apply maximum velocity cap
       if (velocityRef.current.length() > MAX_VELOCITY) {
         velocityRef.current.normalize().multiplyScalar(MAX_VELOCITY);
       }
 
-      // Apply velocity to update position
       spacecraftRef.current.position.x += velocityRef.current.x;
       spacecraftRef.current.position.y += velocityRef.current.y;
       spacecraftRef.current.position.z += velocityRef.current.z;
 
-      // Instantly rotate spacecraft to face direction of travel
       if (velocityRef.current.lengthSq() > 0.00001) {
-        // Use heading for rotation instead of velocity
         const lookAt = new THREE.Vector3(
           spacecraftRef.current.position.x + headingRef.current.x,
           spacecraftRef.current.position.y + headingRef.current.y,
           spacecraftRef.current.position.z + headingRef.current.z
         );
 
-        // Create a temporary object to calculate the target rotation
         const tempObj = new THREE.Object3D();
         tempObj.position.copy(spacecraftRef.current.position);
         tempObj.lookAt(lookAt);
@@ -245,12 +311,9 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
 
         targetRotationRef.current.setFromRotationMatrix(tempObj.matrix);
 
-        // Instant rotation response for immediate direction changes
         spacecraftRef.current.quaternion.copy(targetRotationRef.current);
       }
 
-      // Position camera behind spacecraft (chase camera) with smooth transitions
-      // Adjust camera offset for better viewing distance
       const targetCameraOffset = new THREE.Vector3(0, 3.5 * SPACECRAFT_SCALE, -12 * SPACECRAFT_SCALE);
       const rotatedOffset = targetCameraOffset.clone().applyQuaternion(spacecraftRef.current.quaternion);
 
@@ -260,11 +323,9 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
         spacecraftRef.current.position.z + rotatedOffset.z
       );
 
-      // Smooth camera movement
-      const cameraLerp = initComplete ? 0.05 : 0.02; // Slower at start, faster after init
+      const cameraLerp = initComplete ? 0.05 : 0.02; 
       camera.position.lerp(targetCameraPos, cameraLerp);
 
-      // Smoothly look at spacecraft
       const currentLookAt = new THREE.Vector3();
       camera.getWorldDirection(currentLookAt);
 
@@ -282,10 +343,8 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
         camera.position.z + targetLookAt.z
       );
 
-      // Add subtle oscillation for more natural feeling
       if (initComplete) {
         spacecraftRef.current.position.y += Math.sin(state.clock.elapsedTime * 2) * 0.003;
-        // Add rock and roll swaying motion
         spacecraftRef.current.rotation.z += Math.sin(state.clock.elapsedTime * 3) * 0.002;
       }
     }
