@@ -320,10 +320,10 @@ export default function App() {
             border: isSciFiMode ? '1px solid #00FFFF' : 'none',
             boxShadow: isSciFiMode ? '0 0 15px rgba(0, 255, 255, 0.5)' : 'none',
             transition: 'all 0.3s ease',
-            fontSize: 'clamp(0.7rem, 2.5vw, 1rem)',
-            maxWidth: '40vw',
+            fontSize: 'clamp(0.8rem, 3vw, 1.1rem)',
+            maxWidth: '45vw',
             zIndex: 10
-          }} onClick={toggleSciFiMode}>
+          }} onClick={toggleSciFiMode} className="scifi-toggle-btn">
             <div style={{ display: 'flex', alignItems: 'center' }}>
               {isSciFiMode && (
                 <div style={{ 
@@ -386,6 +386,11 @@ export default function App() {
                 top: 75px !important;
                 max-width: min(250px, 45vw) !important;
               }
+              .scifi-toggle-btn {
+                padding: 10px !important;
+                font-size: clamp(0.9rem, 3.5vw, 1.2rem) !important;
+                min-width: 120px !important;
+              }
             }
             
             @media screen and (max-width: 480px) {
@@ -397,6 +402,11 @@ export default function App() {
               .info-panel h3 {
                 margin: 0 0 4px 0 !important;
                 font-size: 1em !important;
+              }
+              .scifi-toggle-btn {
+                padding: 10px !important;
+                font-size: clamp(0.7rem, 3.2vw, 1rem) !important;
+                min-width: 100px !important;
               }
               body.scifi-active .info-panel {
                 top: 65px !important;
