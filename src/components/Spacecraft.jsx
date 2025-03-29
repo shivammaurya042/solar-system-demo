@@ -8,7 +8,7 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
   const velocityRef = useRef(new THREE.Vector3(0, 0, 0)); // Current velocity (starts at 0)
   const targetRotationRef = useRef(new THREE.Quaternion()); // Target rotation
   const steeringForceRef = useRef(new THREE.Vector3(0, 0, 0)); // Steering force vector
-  const headingRef = useRef(new THREE.Vector3(0, 0, 1)); // Forward direction
+  const headingRef = useRef(new THREE.Vector3(0, 0, 1)); // Initial forward direction will be updated
   const { camera } = useThree();
   const [initComplete, setInitComplete] = useState(false);
   const [atBoundary, setAtBoundary] = useState(false);
@@ -50,16 +50,36 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
       // Set initial position
       spacecraftRef.current.position.set(position[0], position[1], position[2]);
       
+      // Calculate vector pointing toward the center of solar system (sun at 0,0,0)
+      const towardsSun = new THREE.Vector3(0, 0, 0).sub(
+        new THREE.Vector3(position[0], position[1], position[2])
+      ).normalize();
+      
+      // Set initial heading toward the sun
+      headingRef.current.copy(towardsSun);
+      
       // Apply scale to make spacecraft smaller
       spacecraftRef.current.scale.set(SPACECRAFT_SCALE, SPACECRAFT_SCALE, SPACECRAFT_SCALE);
 
-      // Position camera behind spacecraft initially with slightly offset
-      // Adjusted camera positioning for better viewing distance
-      const initialCameraPos = new THREE.Vector3(
-        position[0],
-        position[1] + 1.5, // Increased height for better viewing angle
-        position[2] - 6    // Moved further back for wider view
+      // Orient spacecraft to face toward sun
+      const lookAt = new THREE.Vector3(
+        position[0] + towardsSun.x,
+        position[1] + towardsSun.y,
+        position[2] + towardsSun.z
       );
+      spacecraftRef.current.lookAt(lookAt);
+      
+      // Position camera behind spacecraft based on its new orientation
+      const tempQuat = spacecraftRef.current.quaternion.clone();
+      const cameraOffset = new THREE.Vector3(0, 1.5, -6);
+      cameraOffset.applyQuaternion(tempQuat);
+      
+      const initialCameraPos = new THREE.Vector3(
+        position[0] + cameraOffset.x,
+        position[1] + cameraOffset.y, 
+        position[2] + cameraOffset.z
+      );
+      
       camera.position.copy(initialCameraPos);
       camera.lookAt(position[0], position[1], position[2]);
 
@@ -96,14 +116,16 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
         case 'ArrowUp':
         case 'w':
         case 'W':
-          targetVelocityRef.current.y += speed;
+          // Apply vertical steering force for up movement
+          steeringForceRef.current.y = -steeringIntensity;
           // Boost flames when accelerating up
           setFlameIntensity(prev => Math.min(prev + 0.5, 3));
           break;
         case 'ArrowDown':
         case 's':
         case 'S':
-          targetVelocityRef.current.y -= speed;
+          // Apply vertical steering force for down movement
+          steeringForceRef.current.y = steeringIntensity;
           break;
         case 'ArrowLeft':
         case 'a':
@@ -134,14 +156,21 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
         case 'ArrowRight':
         case 'd':
         case 'D':
-          // Immediately zero out steering force - no decay
+          // Immediately zero out horizontal steering force
           steeringForceRef.current.x = 0;
           break;
         case 'ArrowUp':
         case 'w':
         case 'W':
-          // Gradually reduce flame effect
-          setTimeout(() => setFlameIntensity(prev => Math.max(prev - 0.5, 1)), 300);
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          // Immediately zero out vertical steering force
+          steeringForceRef.current.y = 0;
+          // Gradually reduce flame effect for up movement
+          if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+            setTimeout(() => setFlameIntensity(prev => Math.max(prev - 0.5, 1)), 300);
+          }
           break;
       }
     };
@@ -183,18 +212,16 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
           steeringForceRef.current.x = -normalizedDeltaX * steeringIntensity;
         }
         
-        // Vertical swipe controls up/down movement - more sensitive
+        // Vertical swipe controls up/down steering - more sensitive
         if (Math.abs(deltaY) > 1) {
-          const verticalSpeed = 0.015;
-          targetVelocityRef.current.y = -deltaY * verticalSpeed;
+          const normalizedDeltaY = deltaY / window.innerHeight * 15;
+          steeringForceRef.current.y = -normalizedDeltaY * steeringIntensity;
           
           if (deltaY < -3) { 
             setFlameIntensity(prev => Math.min(prev + 0.3, 3)); 
           } else if (deltaY > 3) { 
             setFlameIntensity(prev => Math.max(prev - 0.2, 1)); 
           }
-        } else {
-          targetVelocityRef.current.y *= 0.85; 
         }
         
         targetVelocityRef.current.z = 0.1; 
@@ -204,7 +231,7 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
     const handleTouchEnd = () => {
       touchActiveRef.current = false;
       steeringForceRef.current.x = 0;
-      targetVelocityRef.current.y = 0;
+      steeringForceRef.current.y = 0;
     };
 
     // Add event listeners
@@ -214,8 +241,9 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
     window.addEventListener('touchmove', handleTouchMove, { passive: false });
     window.addEventListener('touchend', handleTouchEnd);
 
-    // Add a small initial forward velocity after a short delay for better control
+    // Add a small initial forward velocity toward the sun after a short delay
     const forwardTimer = setTimeout(() => {
+      // Get the current heading (which is toward the sun) and use it for initial velocity
       targetVelocityRef.current.z = 0.08; 
     }, 1000);
 
@@ -270,22 +298,24 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
         }
       }
 
-      // Apply steering to heading direction
+      // Apply horizontal and vertical steering to heading direction
       const forwardSpeed = Math.abs(velocityRef.current.z);
       const steeringStrength = STEERING_RESPONSIVENESS + (forwardSpeed * 1.5); 
       
-      const steeringMatrix = new THREE.Matrix4().makeRotationY(steeringForceRef.current.x * steeringStrength);
+      // Apply horizontal steering (X-axis rotation)
+      const horizontalSteeringMatrix = new THREE.Matrix4().makeRotationY(steeringForceRef.current.x * steeringStrength);
+      headingRef.current.applyMatrix4(horizontalSteeringMatrix);
       
-      headingRef.current.applyMatrix4(steeringMatrix);
+      // Apply vertical steering (pitch adjustment)
+      const verticalSteeringMatrix = new THREE.Matrix4().makeRotationX(steeringForceRef.current.y * steeringStrength);
+      headingRef.current.applyMatrix4(verticalSteeringMatrix);
+      
       headingRef.current.normalize(); // Keep as unit vector
       
       const acceleration = 0.04 * boundaryFactor; 
       
-      const targetForwardVelocity = headingRef.current.clone().multiplyScalar(targetVelocityRef.current.z);
-      
-      const targetVerticalVelocity = new THREE.Vector3(0, targetVelocityRef.current.y, 0);
-      
-      const combinedTargetVelocity = targetForwardVelocity.add(targetVerticalVelocity);
+      // Use heading for both forward and vertical movement
+      const combinedTargetVelocity = headingRef.current.clone().multiplyScalar(targetVelocityRef.current.z);
       
       velocityRef.current.lerp(combinedTargetVelocity, acceleration);
 
@@ -349,7 +379,7 @@ const Spacecraft = ({ position, setActive, onEnd }) => {
       }
     }
   });
-  
+
   return (
     <group ref={spacecraftRef}>
       {/* Main body - Hot rod style */}
