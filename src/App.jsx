@@ -119,11 +119,40 @@ export default function App() {
     const endPos = [position.x, position.y + 2, position.z - 8]; // Position closer to the spacecraft
     const endTarget = [position.x, position.y, position.z];
     
-    // Start playing music
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(e => console.log("Audio playback failed:", e));
-    }
+    // Create and display the message notification
+    const messageElement = document.createElement('div');
+    messageElement.className = 'wormhole-message';
+    messageElement.textContent = 'Lets turn up the vibe! CRANK UP YOUR VOLUME!';
+    messageElement.style.position = 'fixed';
+    messageElement.style.top = '20%';
+    messageElement.style.left = '50%';
+    messageElement.style.transform = 'translate(-50%, -50%)';
+    messageElement.style.padding = '20px';
+    messageElement.style.borderRadius = '10px';
+    messageElement.style.background = 'rgba(0, 0, 0, 0.8)';
+    messageElement.style.color = '#FF00FF';
+    messageElement.style.fontFamily = 'monospace, sans-serif';
+    messageElement.style.fontSize = '24px';
+    messageElement.style.fontWeight = 'bold';
+    messageElement.style.zIndex = '9999';
+    messageElement.style.textAlign = 'center';
+    messageElement.style.boxShadow = '0 0 20px #9932CC';
+    messageElement.style.border = '2px solid #9932CC';
+    document.body.appendChild(messageElement);
+    
+    // Remove the message and start playing audio after 3 seconds
+    setTimeout(() => {
+      // Remove the message
+      if (document.body.contains(messageElement)) {
+        document.body.removeChild(messageElement);
+      }
+      
+      // Start playing music
+      if (audioRef.current) {
+        audioRef.current.currentTime = 0;
+        audioRef.current.play().catch(e => console.log("Audio playback failed:", e));
+      }
+    }, 3000); // 3 seconds
     
     // Animate camera to better position for spacecraft transition
     let startTime = null;
