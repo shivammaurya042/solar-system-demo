@@ -8,14 +8,14 @@ I used Windsurf IDE for coding along with Claude 3.7 to complete the project.
 
 It took around 10 hours from start to finish. The result? An immersive 3D experience right in your browser.
 
-## FEATURES
-• Scientific mode with accurate planetary orbits
-• Sci-Fi mode with wormholes and spacecraft travel
-• Adjustable simulation speed
-• Realistic planet textures and atmospheres
-• Mars mission simulation with Hohmann transfer orbit
-• Interesting space event in sci-fi mode
-• Easter egg for AC/DC fans
+## Features
+1. Scientific mode with accurate planetary orbits
+2. Sci-Fi mode with wormholes and spacecraft travel
+3. Adjustable simulation speed
+4. Realistic planet textures and atmospheres
+5. Mars mission simulation with Hohmann transfer orbit
+6. Interesting space event in sci-fi mode
+7. Easter egg for AC/DC fans
 
 ## Technologies Used
 
